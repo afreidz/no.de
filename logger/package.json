@@ -1,0 +1,9 @@
+{
+  "name": "spice-logger",
+  "description": "spice desktop environment global logger",
+  "type": "module",
+  "main": "index.js",
+  "dependencies": {
+    "winston": "^3.3.3"
+  }
+}

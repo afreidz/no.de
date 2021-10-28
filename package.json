@@ -1,0 +1,10 @@
+{
+  "name": "spice",
+  "bin": {
+    "spicewm:": "./wm/index.js"
+  },
+  "workspaces": [
+    "wm",
+    "logger"
+  ]
+}
