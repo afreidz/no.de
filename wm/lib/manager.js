@@ -132,23 +132,5 @@ export default class Manager {
         this.redraw();
       }
     });
-
-    // client.on('event', e => {
-    //   const { wid, name } = e;
-    //   // Logger.info(`Event ${name} for ${wid}`);
-    //   switch (name) {
-
-    //     case 'CreateNotify':
-    //       if (!wid) break;
-    //       client.GetProperty(0, wid, client.atoms.WM_NAME, client.atoms.STRING, 0, 10000000, (err, prop) => {
-    //         Logger.info(`Checking if ${wid} is desktop`);
-    //         if (err) return Logger.error(err);
-    //         const name = prop.data.toString();
-    //         if (!this.desktop && this.desktopId == name) {
-    //           Logger.info(`${wid} is now desktop`);
-    //           this.desktop = wid;
-    //         }
-    //       });
-    //       break;
   }
 }

@@ -19,10 +19,6 @@ export default class Container {
 
     this.#children = new Set;
     this.node = node;
-
-    if (opts.w) this.width = opts.w;
-    if (opts.h) this.height = opts.h;
-
     this.node.setFlexGrow(1);
     this.node.setWidthAuto();
     this.node.setHeightAuto();
@@ -31,28 +27,12 @@ export default class Container {
     this.node.setJustifyContent(yoga.JUSTIFY_STRETCH);
     this.node.setFlexDirection(yoga.FLEX_DIRECTION_ROW);
 
+    if (opts.w) this.node.setWidth(opts.w);
+    if (opts.h) this.node.setHeight(opts.h);
+
     if (parent) parent.append(this);
 
     Cache.set(this.id, this);
-  }
-
-  set full(v = false) {
-    const p = Container.getById(this.parent);
-    if (!p) return;
-
-    if (!v) {
-      this.node.setHeightAuto();
-      this.node.setWidthAuto();
-    }
-    if (!!v && p.node.getFlexDirection() === yoga.FLEX_DIRECTION_ROW) {
-      this.node.setHeightAuto();
-      this.node.setWidthPercent(100);
-    }
-    if (!!v && p.node.getFlexDirection() === yoga.FLEX_DIRECTION_COLUMN) {
-      this.node.setWidthAuto();
-      this.node.setHeightPercent(100);
-    }
-    Container.getById(this.root).refresh();
   }
 
   set margin(n = 0) {
@@ -61,14 +41,6 @@ export default class Container {
 
   set pad(n = 0) {
     this.node.setPadding(yoga.EDGE_ALL, n);
-  }
-
-  set width(n = 0) {
-    this.node.setWidth(n);
-  }
-
-  set height(n = 0) {
-    this.node.setHeight(n);
   }
 
   get ancestors() {
@@ -82,11 +54,11 @@ export default class Container {
       const p = Container.getById(a);
       return !p?.parent;
     });
-    return root || this.id;
+    return Container.getById(root) || this;
   }
 
   get geo() {
-    Container.getById(this.root).refresh();
+    this.root.refresh();
     const layout = this.node.getComputedLayout();
 
     if (this.parent) {
@@ -112,7 +84,7 @@ export default class Container {
   }
 
   draw() {
-    Container.getById(this.root).refresh();
+    this.root.refresh();
     Logger.info(`Drawing window ${this.id} at ${JSON.stringify(this.geo)}`);
     client.MapWindow(this.id);
     client.MoveWindow(this.id, this.geo.x, this.geo.y);
@@ -120,19 +92,23 @@ export default class Container {
   }
 
   append(container) {
-    if (!container instanceof Container) throw new Error(`Cannot append to ${this.id}.  Item is not an instance of Container`);
+    if (!container instanceof Container) throw new Error(`Cannot append to ${this.id}.  ${container} is not an instance of Container`);
+    if (this.#children.has(container.id)) throw new Error(`Cannot append ${container.id}.  It is already a child of ${this.id}`);
+    Logger.info(`Appending ${container?.id} to ${this.id}`);
     container.parent = this.id;
     this.node.insertChild(container.node, this.node.getChildCount());
     this.#children.add(container.id);
-    Container.getById(this.root).refresh();
+    this.root.refresh();
   }
 
-  destroy(container) {
-    if (!container instanceof Container) throw new Error(`Cannot destroy to ${this.id}.  Item is not an instance of Container`);
-    Logger.info(`Destroying ${container?.id} on ${this.id}`);
+  remove(container) {
+    if (!container instanceof Container) throw new Error(`Cannot revmove from ${this.id}.  ${container} is not an instance of Container`);
+    if (!this.#children.has(container.id)) throw new Error(`Cannot remove ${container.id}.  It is not a child of ${this.id}`);
+    Logger.info(`Removing ${container?.id} from ${this.id}`);
+    container.parent = null;
     this.node.removeChild(container.node);
     this.#children.delete(container.id);
-    Container.getById(this.root).refresh();
+    this.root.refresh();
     container.deref();
   }
 
@@ -150,5 +126,16 @@ export default class Container {
 
   static getAll() {
     return [...Cache.values()];
+  }
+
+  static getByCoords(x, y) {
+    return Container.getAll().find(c => {
+      const geo = c.geo;
+      return c instanceof this
+        && x >= geo.x
+        && x <= (geo.x + geo.w)
+        && y >= geo.y
+        && y <= (geo.y + geo.h);
+    });
   }
 }

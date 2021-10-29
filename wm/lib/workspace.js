@@ -45,14 +45,4 @@ export default class Workspace extends Container {
   static getAll() {
     return Container.getByType(this);
   }
-
-  static getByCoords(x, y) {
-    return Workspace.getAll().find(c => {
-      const geo = c.geo;
-      return x >= geo.x
-        && x <= (geo.x + geo.w)
-        && y >= geo.y
-        && y <= (geo.y + geo.h);
-    });
-  }
 }
