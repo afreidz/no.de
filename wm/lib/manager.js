@@ -128,7 +128,7 @@ export default class Manager {
         Logger.info(`Destroy Request for ${win?.id}`);
         if (!win) return;
         const p = Window.getById(win.parent);
-        p.destroy(win);
+        p.remove(win);
         this.redraw();
       }
     });

@@ -28,10 +28,10 @@ export default class Workspace extends Container {
     C.full = true;
   }
 
-  destroy(C) {
-    super.destroy(C);
+  remove(C) {
+    super.remove(C);
     if (this.children.length === 0) {
-      this.append(new Wrapper());
+      Logger.error(`Workspace ${this.id} has no children!`);
     }
   }
 
