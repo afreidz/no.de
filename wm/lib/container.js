@@ -1,23 +1,23 @@
-import xinit from './xinit.js';
-import Logger from 'spice-logger';
-import yoga from 'yoga-layout-prebuilt';
+const X11 = require('./x11');
+const yoga = require('yoga-layout-prebuilt');
+const Logger = require('spice-logger/logger.cjs');
 
-export const Cache = new Map();
+const Cache = new Map();
 
-const { Node } = yoga;
-const { client } = await xinit;
-
-export default class Container {
+exports.Cache = Cache;
+module.exports = class Container {
   #children;
 
-  constructor(opts = {}, parent = null) {
+  constructor(opts = { x11: null, id: null, parent: null }) {
+    if (!(opts.x11 instanceof X11)) throw new Error(`opts.x11 must be an instance of X11`);
     if (opts.id && Cache.has(opts.id)) throw new Error(`Container with ID: ${opts.id} already exists`);
-    const node = Node.create();
+    if (opts.parent && !(opts.parent instanceof Container)) throw new Error(`opts.parent must be an instance of Container`);
+    const node = yoga.Node.create();
 
-    this.id = opts.id || client.AllocID();
-    this.parent = null;
-
+    this.X11 = opts.x11;
     this.#children = new Set;
+    this.id = opts.id || this.X11.client.AllocID();
+
     this.node = node;
     this.node.setFlexGrow(1);
     this.node.setWidthAuto();
@@ -30,8 +30,7 @@ export default class Container {
     if (opts.w) this.node.setWidth(opts.w);
     if (opts.h) this.node.setHeight(opts.h);
 
-    if (parent) parent.append(this);
-
+    if (opts.parent) opts.parent.append(this);
     Cache.set(this.id, this);
   }
 
@@ -86,14 +85,14 @@ export default class Container {
   draw() {
     this.root.refresh();
     Logger.info(`Drawing window ${this.id} at ${JSON.stringify(this.geo)}`);
-    client.MapWindow(this.id);
-    client.MoveWindow(this.id, this.geo.x, this.geo.y);
-    client.ResizeWindow(this.id, this.geo.w, this.geo.h);
+    this.X11.client.MapWindow(this.id);
+    this.X11.client.MoveWindow(this.id, this.geo.x, this.geo.y);
+    this.X11.client.ResizeWindow(this.id, this.geo.w, this.geo.h);
   }
 
   append(container) {
-    if (!container instanceof Container) throw new Error(`Cannot append to ${this.id}.  ${container} is not an instance of Container`);
     if (this.#children.has(container.id)) throw new Error(`Cannot append ${container.id}.  It is already a child of ${this.id}`);
+    if (!container instanceof Container) throw new Error(`Cannot append to ${this.id}.  ${container} is not an instance of Container`);
     Logger.info(`Appending ${container?.id} to ${this.id}`);
     container.parent = this.id;
     this.node.insertChild(container.node, this.node.getChildCount());
@@ -102,8 +101,8 @@ export default class Container {
   }
 
   remove(container) {
-    if (!container instanceof Container) throw new Error(`Cannot revmove from ${this.id}.  ${container} is not an instance of Container`);
     if (!this.#children.has(container.id)) throw new Error(`Cannot remove ${container.id}.  It is not a child of ${this.id}`);
+    if (!container instanceof Container) throw new Error(`Cannot revmove from ${this.id}.  ${container} is not an instance of Container`);
     Logger.info(`Removing ${container?.id} from ${this.id}`);
     container.parent = null;
     this.node.removeChild(container.node);

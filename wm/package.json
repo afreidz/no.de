@@ -9,5 +9,11 @@
     "uuid": "^8.3.2",
     "x11": "^2.3.0",
     "yoga-layout-prebuilt": "^1.10.0"
+  },
+  "scripts": {
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
+  },
+  "devDependencies": {
+    "jest": "^27.3.1"
   }
 }
