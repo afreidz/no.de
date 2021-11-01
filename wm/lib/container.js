@@ -1,36 +1,26 @@
+const uuid = require('uuid');
 const X11 = require('./x11');
 const yoga = require('yoga-layout-prebuilt');
 const Logger = require('spice-logger/logger.cjs');
 
 const Cache = new Map();
 
-exports.Cache = Cache;
 module.exports = class Container {
   #children;
 
-  constructor(opts = { x11: null, id: null, parent: null }) {
-    if (!(opts.x11 instanceof X11)) throw new Error(`opts.x11 must be an instance of X11`);
+  constructor(opts = { x11: null, id: null }) {
+    if (opts.x11 && !(opts.x11 instanceof X11)) throw new Error(`opts.x11 must be an instance of X11`);
     if (opts.id && Cache.has(opts.id)) throw new Error(`Container with ID: ${opts.id} already exists`);
-    if (opts.parent && !(opts.parent instanceof Container)) throw new Error(`opts.parent must be an instance of Container`);
     const node = yoga.Node.create();
 
+    this.node = node;
     this.X11 = opts.x11;
     this.#children = new Set;
-    this.id = opts.id || this.X11.client.AllocID();
-
-    this.node = node;
-    this.node.setFlexGrow(1);
-    this.node.setWidthAuto();
-    this.node.setHeightAuto();
-    this.node.setFlexShrink(0);
-    this.node.setAlignItems(yoga.ALIGN_STRETCH);
-    this.node.setJustifyContent(yoga.JUSTIFY_STRETCH);
-    this.node.setFlexDirection(yoga.FLEX_DIRECTION_ROW);
+    this.id = opts.id || uuid.v4();
 
     if (opts.w) this.node.setWidth(opts.w);
     if (opts.h) this.node.setHeight(opts.h);
 
-    if (opts.parent) opts.parent.append(this);
     Cache.set(this.id, this);
   }
 
@@ -57,7 +47,6 @@ module.exports = class Container {
   }
 
   get geo() {
-    this.root.refresh();
     const layout = this.node.getComputedLayout();
 
     if (this.parent) {
@@ -83,6 +72,7 @@ module.exports = class Container {
   }
 
   draw() {
+    if (!this.X11 || !(this.X11 instanceof X11)) throw new Error(`Cannot draw container with no X11 client`);
     this.root.refresh();
     Logger.info(`Drawing window ${this.id} at ${JSON.stringify(this.geo)}`);
     this.X11.client.MapWindow(this.id);
@@ -91,18 +81,18 @@ module.exports = class Container {
   }
 
   append(container) {
+    if (!(container instanceof Container)) throw new Error(`Cannot append to ${this.id}.  ${container} is not an instance of Container`);
+    if (this.ancestors.includes(container.id)) throw new Error(`Cannot append ${container.id}. It is an ancestor of ${this.id}`);
     if (this.#children.has(container.id)) throw new Error(`Cannot append ${container.id}.  It is already a child of ${this.id}`);
-    if (!container instanceof Container) throw new Error(`Cannot append to ${this.id}.  ${container} is not an instance of Container`);
     Logger.info(`Appending ${container?.id} to ${this.id}`);
     container.parent = this.id;
     this.node.insertChild(container.node, this.node.getChildCount());
     this.#children.add(container.id);
-    this.root.refresh();
   }
 
   remove(container) {
+    if (!(container instanceof Container)) throw new Error(`Cannot revmove from ${this.id}.  ${container} is not an instance of Container`);
     if (!this.#children.has(container.id)) throw new Error(`Cannot remove ${container.id}.  It is not a child of ${this.id}`);
-    if (!container instanceof Container) throw new Error(`Cannot revmove from ${this.id}.  ${container} is not an instance of Container`);
     Logger.info(`Removing ${container?.id} from ${this.id}`);
     container.parent = null;
     this.node.removeChild(container.node);
@@ -120,7 +110,7 @@ module.exports = class Container {
   }
 
   static getByType(type) {
-    return [...Cache.values()].filter(c => c instanceof type);
+    return [...Cache.values()].filter(c => (c instanceof type));
   }
 
   static getAll() {
@@ -138,3 +128,6 @@ module.exports = class Container {
     });
   }
 }
+
+exports = module.exports;
+exports.Cache = Cache;

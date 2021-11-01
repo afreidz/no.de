@@ -1,10 +1,12 @@
-import Logger from 'spice-logger';
-import Container from './container.js';
-import yoga from 'yoga-layout-prebuilt';
+const X11 = require('./x11');
+const Container = require('./container');
+const yoga = require('yoga-layout-prebuilt');
+const Logger = require('spice-logger/logger.cjs');
 
-export default class Window extends Container {
-  constructor(opts = {}, parent = false) {
-    super(opts);
+class Window extends Container {
+  constructor(parent = null, id = null, x11 = null) {
+    if (parent.constructor.name !== 'Wrapper') throw new Error(`Window must have a parent of Wrapper`);
+    super({ x11, id });
     this.margin = 5;
 
     this.node.setJustifyContent(yoga.JUSTIFY_FLEX_START);
@@ -12,16 +14,18 @@ export default class Window extends Container {
     this.node.setAlignContent(yoga.ALIGN_STRETCH);
     this.node.setAlignItems(yoga.ALIGN_STRETCH);
     this.node.setAlignSelf(yoga.ALIGN_AUTO);
+    this.node.setFlexShrink(0);
     this.node.setHeightAuto();
     this.node.setWidthAuto();
     this.node.setFlexGrow(1);
 
-    if (parent) parent.append(this);
-
-    Logger.info(`Creating Window (${this.id}) with opts: ${JSON.stringify(opts)}`);
+    parent.append(this);
+    Logger.info(`Creating Window (${this.id}), Parent Wrapper: (${parent.id})`);
   }
 
   static getAll() {
     return Container.getByType(this);
   }
 }
+
+module.exports = Window;

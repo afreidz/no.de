@@ -1,7 +1,8 @@
-import xinit from './xinit.js';
-const { client, display } = await xinit;
+const X11 = require('./x11');
 
-export default async function () {
+module.exports = async function () {
+  const x11 = await (new X11());
+  const { client, display } = x11;
   const RandR = await new Promise(r => {
     client.require('randr', (err, ext) => r(ext));
   });
@@ -17,8 +18,9 @@ export default async function () {
         RandR.GetCrtcInfo(output, 0, (err, i) => r(i));
       }));
     }
-    r(info.filter(s => !!s.output.length).map(s => {
+    r(info.filter(s => !!s.output.length).map((s, i) => {
       return {
+        id: i,
         x: s.x,
         y: s.y,
         w: s.width,

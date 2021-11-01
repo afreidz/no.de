@@ -1,25 +1,29 @@
-import Logger from 'spice-logger';
-import Wrapper from './wrapper.js';
-import Container from './container.js';
-import yoga from 'yoga-layout-prebuilt';
+const X11 = require('./x11');
+const Wrapper = require('./wrapper');
+const Container = require('./container');
+const yoga = require('yoga-layout-prebuilt');
+const Logger = require('spice-logger/logger.cjs');
 
-export default class Workspace extends Container {
-  constructor(opts = {}) {
-    super(opts.screen);
-
+class Workspace extends Container {
+  constructor(screen = { id: 0, x: 0, y: 0, w: 100, h: 100 }) {
+    super();
     this.pad = 5;
-    this.screen = opts.screen;
+    this.screen = screen;
 
-    this.node.setJustifyContent(yoga.JUSTIFY_FLEX_START);
-    this.node.setFlexDirection(yoga.FLEX_DIRECTION_ROW);
-    this.node.setAlignContent(yoga.ALIGN_STRETCH);
-    this.node.setAlignItems(yoga.ALIGN_STRETCH);
+    this.node.setFlexGrow(1);
+    this.node.setWidthAuto();
+    this.node.setHeightAuto();
+    this.node.setFlexShrink(0);
+    this.node.setWidth(screen.w);
+    this.node.setHeight(screen.h);
     this.node.setFlexWrap(yoga.WRAP_WRAP);
-    this.node.setHeight(opts.screen.h);
-    this.node.setWidth(opts.screen.w);
+    this.node.setAlignItems(yoga.ALIGN_STRETCH);
+    this.node.setAlignContent(yoga.ALIGN_STRETCH);
+    this.node.setFlexDirection(yoga.FLEX_DIRECTION_ROW);
+    this.node.setJustifyContent(yoga.JUSTIFY_FLEX_START);
 
-    this.append(new Wrapper());
 
+    new Wrapper(this);
     Logger.info(`Creating Workspace (${this.id}) with geo: ${JSON.stringify(this.geo)}`);
   }
 
@@ -32,6 +36,7 @@ export default class Workspace extends Container {
     super.remove(C);
     if (this.children.length === 0) {
       Logger.error(`Workspace ${this.id} has no children!`);
+      new Wrapper(this);
     }
   }
 
@@ -46,3 +51,5 @@ export default class Workspace extends Container {
     return Container.getByType(this);
   }
 }
+
+module.exports = Workspace;

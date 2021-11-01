@@ -1,23 +1,19 @@
-import ioHook from 'iohook';
-import xinit from './xinit.js';
-import Window from './window.js';
-import { v4 as uuid } from 'uuid';
-import Logger from 'spice-logger';
-import Wrapper from './wrapper.js';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import { exec } from 'child_process';
-import Container from './container.js';
-import Workspace from './workspace.js';
-import getScreenInfo from './screen.js';
-const { client, display, eventMasks } = await xinit;
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const uuid = require('uuid');
+const X11 = require('./x11.js');
+const ioHook = require('iohook');
+const { join } = require('path');
+const Window = require('./window');
+const Wrapper = require('./wrapper');
+const Container = require('./container');
+const Workspace = require('./workspace');
+const { exec } = require('child_process');
+const getScreenInfo = require('./screen');
+const Logger = require('spice-logger/logger.cjs');
 
-export default class Manager {
+class Manager {
   constructor(opts = { dbug: false }) {
-    this.screen = display.screen[0];
     this.debug = opts.debug;
-    this.id = uuid();
+    this.id = uuid.v4();
     this.workspaces = [];
     this.desktop = null;
     this.current = {
@@ -27,11 +23,6 @@ export default class Manager {
     };
 
     if (this.debug) return;
-    Logger.info(`Initializing Window Manager...`);
-    const screen0 = display.screen[0];
-    client.ChangeWindowAttributes(screen0.root, eventMasks.manager, Logger.error);
-    Logger.info(`${screen0.root} is now the window manager`);
-
     return this.init();
   }
 
@@ -40,10 +31,19 @@ export default class Manager {
   }
 
   async init() {
+    const x11 = await (new X11());
+    const { client, display } = x11;
     const screens = await getScreenInfo();
 
+    Logger.info(`Initializing Window Manager...`);
+    this.x11 = x11;
+    const screen0 = display.screen[0];
+    this.screen = screen0;
+    client.ChangeWindowAttributes(screen0.root, X11.eventMasks.manager, Logger.error);
+    Logger.info(`${screen0.root} is now the window manager`);
+
     screens.forEach(s => {
-      const ws = new Workspace({ screen: s });
+      const ws = new Workspace(s);
       this.workspaces.push(ws);
     });
 
@@ -77,6 +77,9 @@ export default class Manager {
 
   listen() {
     if (this.debug) return;
+
+    const { client } = this.x11;
+
     client.on('event', e => {
       const { wid, name } = e;
 
@@ -105,7 +108,7 @@ export default class Manager {
         }
 
         if (!!Container.getById(wid)) return;
-        client.ChangeWindowAttributes(wid, eventMasks.window);
+        client.ChangeWindowAttributes(wid, X11.eventMasks.window);
 
         const ws = this.current.workspace
           || Workspace.getAll()[0];
@@ -115,7 +118,7 @@ export default class Manager {
         if (!wrapper) wrapper = new Wrapper(ws);
 
         Logger.info(ws.id, wrapper.id);
-        const win = new Window({ id: wid }, wrapper);
+        const win = new Window(wrapper, wid, this.x11);
         this.redraw();
       }
 
@@ -134,3 +137,5 @@ export default class Manager {
     });
   }
 }
+
+module.exports = Manager;

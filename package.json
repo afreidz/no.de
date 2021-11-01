@@ -3,6 +3,9 @@
   "bin": {
     "spicewm:": "./wm/index.js"
   },
+  "scripts": {
+    "test": "npm t -w wm"
+  },
   "workspaces": [
     "wm",
     "logger"

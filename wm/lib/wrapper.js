@@ -1,21 +1,28 @@
-import Logger from 'spice-logger';
-import Container from './container.js';
-import yoga from 'yoga-layout-prebuilt';
+const X11 = require('./x11');
+const Container = require('./container');
+const yoga = require('yoga-layout-prebuilt');
+const Logger = require('spice-logger/logger.cjs');
 
-export default class Wrapper extends Container {
-  constructor(parent) {
-    super({}, parent);
+class Wrapper extends Container {
+  constructor(parent = null) {
+    if (parent.constructor.name !== 'Workspace') throw new Error('Wrapper must have a parent of Workspace');
+    super();
 
-    this.node.setJustifyContent(yoga.JUSTIFY_FLEX_START);
-    this.node.setFlexDirection(yoga.FLEX_DIRECTION_ROW);
+    this.node.setFlexGrow(1);
+    this.node.setWidthAuto();
+    this.node.setHeightAuto();
+    this.node.setFlexShrink(0);
     this.node.setAlignItems(yoga.ALIGN_STRETCH);
+    this.node.setFlexDirection(yoga.FLEX_DIRECTION_ROW);
+    this.node.setJustifyContent(yoga.JUSTIFY_FLEX_START);
 
-    Logger.info(`Creating Wrapper (${this.id}) with geo: ${JSON.stringify(this.geo)}`);
+    parent.append(this);
+    Logger.info(`Creating Wrapper (${this.id}), Parent Workspace: (${parent.id})`);
   }
 
   set full(v = false) {
+    if (!this.parent) return;
     const p = Container.getById(this.parent);
-    if (!p) return;
 
     if (!v) {
       this.node.setHeightAuto();
@@ -43,3 +50,5 @@ export default class Wrapper extends Container {
     return Container.getByType(this);
   }
 }
+
+module.exports = Wrapper;

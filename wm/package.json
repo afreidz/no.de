@@ -1,7 +1,7 @@
 {
   "name": "spice-wm",
   "description": "spice desktop environment window manager",
-  "type": "module",
+  "type": "commonjs",
   "bin": "index.js",
   "dependencies": {
     "iohook": "^0.6.6",
@@ -11,7 +11,7 @@
     "yoga-layout-prebuilt": "^1.10.0"
   },
   "scripts": {
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
+    "test": "jest --watch"
   },
   "devDependencies": {
     "jest": "^27.3.1"

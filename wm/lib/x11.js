@@ -17,9 +17,9 @@ class X11 {
   }
 
   async init() {
-    const display = await display;
-    this.client = display.client;
-    this.display = display;
+    this.display = await display;
+    this.client = this.display.client;
+    return this;
   }
 
   static eventMasks = {
