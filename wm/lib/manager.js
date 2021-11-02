@@ -46,7 +46,7 @@ class Manager {
     client.ChangeWindowAttributes(this.xscreen.root, X11.eventMasks.manager, Logger.error);
     Logger.info(`${this.xscreen.root} is now the window manager`);
 
-    ioHook.on('mousemove', e => (this.mouse = { x: e.x, y: e.y }));
+    ioHook.on('mousemove', e => (this.mouse = [e.x, e.y]));
     ioHook.start();
 
     this.listen();
@@ -56,6 +56,12 @@ class Manager {
 
   exec(cmd) {
     exec(cmd);
+  }
+
+  kill() {
+    if (!this.focusedWindow) return;
+    this.client.DestroyWindow(this.focusedWindow.id);
+    this.focusedWindow = null;
   }
 
   redraw() {
@@ -94,8 +100,8 @@ class Manager {
     this.client.ChangeWindowAttributes(wid, X11.eventMasks.window);
 
     const wrapper = this.split
-      ? new Wrapper(Workspace.getByCoords(...Object.values(this.mouse)))
-      : Wrapper.getByCoords(...Object.values(this.mouse));
+      ? new Wrapper(Workspace.getByCoords(...this.mouse))
+      : Wrapper.getByCoords(...this.mouse);
 
     const win = new Window(wrapper, wid, this.x11);
     Workspace.getById(wrapper.parent).redraw();
@@ -113,6 +119,11 @@ class Manager {
     ws.redraw();
   }
 
+  handleEnter(wid) {
+    this.focusedWindow = Window.getById(wid);
+    this.client.SetInputFocus(wid);
+  }
+
   async listen() {
     if (this.debug) return;
     this.client.on('event', async e => {
@@ -123,7 +134,7 @@ class Manager {
         case 'MapRequest': this.handleMap(wid); break;
         case 'DestroyNotify': this.handleDestroy(wid); break;
         case 'CreateNotify': await this.setDesktop(wid); break;
-        case 'EnterNotify': this.client.SetInputFocus(wid); break;
+        case 'EnterNotify': this.handleEnter(wid); break;
       }
     });
   }

@@ -13,7 +13,10 @@ const Manager = require('./lib/manager');
   manager.addWorkspace(1);
 
   ioHook.on('keydown', e => {
-    console.log('Key ', e.keycode);
+    // console.log('Key ', e.keycode);
+    if (e.keycode == 17 && e.metaKey) {
+      manager.kill();
+    }
     if (e.keycode == 28 && e.metaKey) {
       manager.exec('kitty');
     }

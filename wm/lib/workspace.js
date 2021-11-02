@@ -41,8 +41,7 @@ class Workspace extends Container {
       others.forEach(ws => (ws.active = false));
       this.redraw();
     } else {
-      const windows = this.children.map(c => Wrapper.getById(c).children).flat();
-      windows.forEach(w => {
+      this.windows.forEach(w => {
         Window.getById(w).hide();
       });
     }
@@ -50,8 +49,7 @@ class Workspace extends Container {
 
   redraw() {
     if (!this.active) return;
-    const windows = this.children.map(c => Wrapper.getById(c).children).flat();
-    windows.forEach(w => {
+    this.windows.forEach(w => {
       Window.getById(w).draw();
     });
   }
@@ -64,6 +62,10 @@ class Workspace extends Container {
   remove(C) {
     if (this.children.length === 1) return;
     super.remove(C);
+  }
+
+  get windows() {
+    return this.children.map(c => Wrapper.getById(c).children).flat();
   }
 
   get geo() {
