@@ -50,7 +50,7 @@ class Manager {
     ioHook.start();
 
     this.listen();
-    exec(`${join(__dirname, 'desktop.cjs')} ${this.id}`);
+    exec(`${join(__dirname, '../../desktop', 'index.js')} ${this.id}`);
     return this;
   }
 

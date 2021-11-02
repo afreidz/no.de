@@ -5,7 +5,6 @@
   "bin": "index.js",
   "dependencies": {
     "iohook": "^0.6.6",
-    "node-gtk": "^0.10.0",
     "uuid": "^8.3.2",
     "x11": "^2.3.0",
     "yoga-layout-prebuilt": "^1.10.0"

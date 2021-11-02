@@ -1,0 +1,10 @@
+{
+  "name": "spice-desktop",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "description": "web-based desktop for spice desktop environment",
+  "main": "index.js",
+  "dependencies": {
+    "node-gtk": "^0.10.0"
+  }
+}
