@@ -8,21 +8,51 @@ const Manager = require('./lib/manager');
   manager.addWorkspace(0);
   manager.addWorkspace(0);
   manager.addWorkspace(0);
+  manager.addWorkspace(0);
+  manager.addWorkspace(1);
   manager.addWorkspace(1);
   manager.addWorkspace(1);
   manager.addWorkspace(1);
 
   ioHook.on('keydown', e => {
     // console.log('Key ', e.keycode);
-    if (e.keycode == 17 && e.metaKey) {
-      manager.kill();
-    }
-    if (e.keycode == 28 && e.metaKey) {
-      manager.exec('kitty');
-    }
+
+    // Manager
     if (e.keycode == 31 && e.metaKey) {
       manager.split = !manager.split;
     }
+    if (e.keycode == 17 && e.metaKey) {
+      manager.kill();
+    }
+
+    // Apps
+    if (e.keycode == 28 && e.metaKey) { //cmd+enter
+      manager.exec('kitty');
+    }
+    if (e.keycode == 48 && e.metaKey) { //cmd+b
+      manager.exec('brave');
+    }
+    if (e.keycode == 21 && e.metaKey) { //cmd+d
+      manager.exec('discord');
+    }
+    if (e.keycode == 31 && e.metaKey) { //cmd+s
+      manager.exec('slack');
+    }
+    if (e.keycode == 20 && e.metaKey) { //cmd+t
+      manager.exec('teams');
+    }
+    if (e.keycode == 33 && e.metaKey) { //cmd+f
+      manager.exec('nautilus');
+    }
+    if (e.keycode == 46 && e.metaKey) { //cmd+c
+      manager.exec('codium');
+    }
+    if (e.keycode == 24 && e.metaKey) { //cmd+o
+      manager.exec('prospect-mail');
+    }
+
+
+    // Workspaces
     if (e.keycode == 2 && e.metaKey) {
       manager.workspaces[0].active = true;
     }
@@ -40,6 +70,12 @@ const Manager = require('./lib/manager');
     }
     if (e.keycode == 7 && e.metaKey) {
       manager.workspaces[5].active = true;
+    }
+    if (e.keycode == 8 && e.metaKey) {
+      manager.workspaces[6].active = true;
+    }
+    if (e.keycode == 9 && e.metaKey) {
+      manager.workspaces[7].active = true;
     }
   });
   ioHook.start();

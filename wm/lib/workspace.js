@@ -10,7 +10,7 @@ class Workspace extends Container {
 
   constructor(screen = { i: 0, x: 0, y: 0, w: 100, h: 100 }) {
     super();
-    this.pad = 5;
+    this.pad = 10;
     this.active = false;
     this.screen = screen;
     this.node.setFlexGrow(1);
