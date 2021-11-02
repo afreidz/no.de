@@ -5,7 +5,7 @@ const Logger = require('spice-logger/logger.cjs');
 
 class Window extends Container {
   constructor(parent = null, id = null, x11 = null) {
-    if (parent.constructor.name !== 'Wrapper') throw new Error(`Window must have a parent of Wrapper`);
+    if (parent?.constructor.name !== 'Wrapper') throw new Error(`Window must have a parent of Wrapper`);
     super({ x11, id });
     this.margin = 5;
 

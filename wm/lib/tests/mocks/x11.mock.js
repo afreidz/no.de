@@ -6,6 +6,7 @@ const clientMock = {
   require: jest.fn(),
   MapWindow: jest.fn(),
   MoveWindow: jest.fn(),
+  UnmapWindow: jest.fn(),
   ResizeWindow: jest.fn(),
   AllocID: jest.fn(() => (counter += 1)),
 };

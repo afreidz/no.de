@@ -67,6 +67,7 @@ describe('Container', () => {
     expect(parentRefreshSpy).toHaveBeenCalledTimes(1);
     expect(clientMock.MapWindow).toHaveBeenCalledTimes(1);
     expect(clientMock.MoveWindow).toHaveBeenCalledTimes(1);
+    expect(clientMock.UnmapWindow).toHaveBeenCalledTimes(1);
     expect(clientMock.ResizeWindow).toHaveBeenCalledTimes(1);
 
     const child = new Container({ x11 });
@@ -77,6 +78,7 @@ describe('Container', () => {
     expect(parentRefreshSpy).toHaveBeenCalledTimes(2);
     expect(clientMock.MapWindow).toHaveBeenCalledTimes(2);
     expect(clientMock.MoveWindow).toHaveBeenCalledTimes(2);
+    expect(clientMock.UnmapWindow).toHaveBeenCalledTimes(2);
     expect(clientMock.ResizeWindow).toHaveBeenCalledTimes(2);
   });
   test('Append/Remove should throw meaningful errors', () => {

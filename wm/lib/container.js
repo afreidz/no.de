@@ -71,13 +71,20 @@ module.exports = class Container {
     this.node.calculateLayout(this.node.getWidth(), this.node.getHeight(), yoga.DIRECTION_LTR);
   }
 
+  hide() {
+    if (!this.X11 || !(this.X11 instanceof X11)) throw new Error(`Cannot draw container with no X11 client`);
+    Logger.info(`Hiding window ${this.id}`);
+    this.X11.client.UnmapWindow(this.id);
+  }
+
   draw() {
     if (!this.X11 || !(this.X11 instanceof X11)) throw new Error(`Cannot draw container with no X11 client`);
     this.root.refresh();
-    Logger.info(`Drawing window ${this.id} at ${JSON.stringify(this.geo)}`);
-    this.X11.client.MapWindow(this.id);
+    Logger.info(`Drawing window ${this.id}`);
+    this.X11.client.UnmapWindow(this.id);
     this.X11.client.MoveWindow(this.id, this.geo.x, this.geo.y);
     this.X11.client.ResizeWindow(this.id, this.geo.w, this.geo.h);
+    this.X11.client.MapWindow(this.id);
   }
 
   append(container) {

@@ -59,6 +59,17 @@ class Wrapper extends Container {
   static getAll() {
     return Container.getByType(this);
   }
+
+  static getByCoords(x, y) {
+    return Wrapper.getAll().find(c => {
+      const geo = c.geo;
+      return !!Container.getById(c.parent).active
+        && x >= geo.x
+        && x <= (geo.x + geo.w)
+        && y >= geo.y
+        && y <= (geo.y + geo.h);
+    });
+  }
 }
 
 module.exports = Wrapper;

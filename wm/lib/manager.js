@@ -4,7 +4,6 @@ const ioHook = require('iohook');
 const { join } = require('path');
 const Window = require('./window');
 const Wrapper = require('./wrapper');
-const Container = require('./container');
 const Workspace = require('./workspace');
 const { exec } = require('child_process');
 const getScreenInfo = require('./screen');
@@ -13,14 +12,11 @@ const Logger = require('spice-logger/logger.cjs');
 class Manager {
   constructor(opts = { dbug: false }) {
     this.debug = opts.debug;
+    this.split = false;
     this.id = uuid.v4();
     this.workspaces = [];
     this.desktop = null;
-    this.current = {
-      ws: null,
-      window: null,
-      wrapper: null,
-    };
+    this.mouse = { x: 0, y: 0 };
 
     if (this.debug) return;
     return this.init();
@@ -30,44 +26,36 @@ class Manager {
     return `desktop_${this.id}`;
   }
 
+  addWorkspace(screen = 0) {
+    const ws = new Workspace(this.screens[screen]);
+    this.workspaces.push(ws);
+    ws.active = true;
+  }
+
   async init() {
     const x11 = await (new X11());
     const { client, display } = x11;
     const screens = await getScreenInfo();
 
-    Logger.info(`Initializing Window Manager...`);
     this.x11 = x11;
-    const screen0 = display.screen[0];
-    this.screen = screen0;
-    client.ChangeWindowAttributes(screen0.root, X11.eventMasks.manager, Logger.error);
-    Logger.info(`${screen0.root} is now the window manager`);
+    this.client = client;
+    this.screens = screens;
+    this.xscreen = display.screen[0];
 
-    screens.forEach(s => {
-      const ws = new Workspace(s);
-      this.workspaces.push(ws);
-    });
+    Logger.info(`Initializing Window Manager...`);
+    client.ChangeWindowAttributes(this.xscreen.root, X11.eventMasks.manager, Logger.error);
+    Logger.info(`${this.xscreen.root} is now the window manager`);
 
-    this.current.workspace = this.workspaces[0];
-
-    ioHook.on('mousemove', e => {
-      this.current.workspace = Workspace.getByCoords(e.x, e.y);
-      this.current.wrapper = Wrapper.getByCoords(e.x, e.y);
-    });
-
-    ioHook.on('keydown', e => {
-      if (e.keycode == 28 && e.metaKey && !e.shiftKey) {
-        exec('kitty');
-      }
-      if (e.keycode == 28 && e.metaKey && e.shiftKey) {
-        this.current.wrapper = new Wrapper(this.current.workspace);
-        exec('kitty');
-      }
-    });
-
+    ioHook.on('mousemove', e => (this.mouse = { x: e.x, y: e.y }));
     ioHook.start();
-    this.listen();
 
+    this.listen();
     exec(`${join(__dirname, 'desktop.cjs')} ${this.id}`);
+    return this;
+  }
+
+  exec(cmd) {
+    exec(cmd);
   }
 
   redraw() {
@@ -75,64 +63,67 @@ class Manager {
     all.forEach(c => c.draw());
   }
 
-  listen() {
+  getWinName(wid) {
+    const { WM_NAME, STRING } = this.client.atoms;
+    return new Promise(r => {
+      this.client.GetProperty(0, wid, WM_NAME, STRING, 0, 10000000, (err, prop) => {
+        if (err) return Logger.error(err);
+        const name = prop.data.toString();
+        r(name);
+      });
+    });
+  }
+
+  async setDesktop(wid) {
+    Logger.info(`Checking if ${wid} is desktop`);
+    if (this.desktopId === await this.getWinName(wid)) {
+      Logger.info(`${wid} is now desktop`);
+      this.desktop = wid;
+    }
+  }
+
+  handleMap(wid) {
+    if (this.desktop === wid) {
+      this.client.MoveWindow(wid, 0, 0);
+      this.client.ResizeWindow(wid, this.xscreen.pixel_width, this.xscreen.pixel_height);
+      this.client.MapWindow(wid);
+      return;
+    }
+
+    if (!!Window.getById(wid)) return;
+    this.client.ChangeWindowAttributes(wid, X11.eventMasks.window);
+
+    const wrapper = this.split
+      ? new Wrapper(Workspace.getByCoords(...Object.values(this.mouse)))
+      : Wrapper.getByCoords(...Object.values(this.mouse));
+
+    const win = new Window(wrapper, wid, this.x11);
+    Workspace.getById(wrapper.parent).redraw();
+  }
+
+  handleDestroy(wid) {
+    Logger.info(`Destroy Request for ${wid}`);
+    const win = Window.getById(wid);
+    if (!win) return;
+
+    const p = Window.getById(win.parent);
+    const wrap = Wrapper.getAll().find(w => win.ancestors.includes(w.id));
+    const ws = Workspace.getAll().find(w => win.ancestors.includes(w.id));
+    p.remove(win);
+    ws.redraw();
+  }
+
+  async listen() {
     if (this.debug) return;
-
-    const { client } = this.x11;
-
-    client.on('event', e => {
+    this.client.on('event', async e => {
       const { wid, name } = e;
+      if (!wid) return;
 
-      if (name === 'CreateNotify') {
-        if (!wid) return;
-        client.GetProperty(0, wid, client.atoms.WM_NAME, client.atoms.STRING, 0, 10000000, (err, prop) => {
-          Logger.info(`Checking if ${wid} is desktop`);
-          if (err) return Logger.error(err);
-          const name = prop.data.toString();
-          Logger.info(`${this.desktopId}, name`);
-          if (!this.desktop && this.desktopId == name) {
-            Logger.info(`${wid} is now desktop`);
-            this.desktop = wid;
-          }
-        });
-      }
-
-      if (name === 'MapRequest') {
-        Logger.info(`Map request for ${wid}`);
-
-        if (this.desktop === wid) {
-          client.MoveWindow(wid, 0, 0);
-          client.ResizeWindow(wid, this.screen.pixel_width, this.screen.pixel_height);
-          client.MapWindow(wid);
-          return;
-        }
-
-        if (!!Container.getById(wid)) return;
-        client.ChangeWindowAttributes(wid, X11.eventMasks.window);
-
-        const ws = this.current.workspace
-          || Workspace.getAll()[0];
-        let wrapper = this.current.wrapper
-          || Wrapper.getById(ws.children[ws.children.length - 1]);
-
-        if (!wrapper) wrapper = new Wrapper(ws);
-
-        Logger.info(ws.id, wrapper.id);
-        const win = new Window(wrapper, wid, this.x11);
-        this.redraw();
-      }
-
-      if (name === 'EnterNotify') {
-        client.SetInputFocus(wid);
-      }
-
-      if (name === 'DestroyNotify') {
-        const win = Window.getById(wid);
-        Logger.info(`Destroy Request for ${win?.id}`);
-        if (!win) return;
-        const p = Window.getById(win.parent);
-        p.remove(win);
-        this.redraw();
+      switch (name) {
+        case 'MapRequest': this.handleMap(wid); break;
+        case 'DestroyNotify': this.handleDestroy(wid); break;
+        case 'CreateNotify': await this.setDesktop(wid); break;
+        case 'EnterNotify': this.client.SetInputFocus(wid); break;
       }
     });
   }
