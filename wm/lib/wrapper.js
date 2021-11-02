@@ -4,10 +4,13 @@ const yoga = require('yoga-layout-prebuilt');
 const Logger = require('spice-logger/logger.cjs');
 
 class Wrapper extends Container {
+  #isFull;
+
   constructor(parent = null) {
     if (parent.constructor.name !== 'Workspace') throw new Error('Wrapper must have a parent of Workspace');
     super();
 
+    this.#isFull = false;
     this.node.setFlexGrow(1);
     this.node.setWidthAuto();
     this.node.setHeightAuto();
@@ -20,17 +23,24 @@ class Wrapper extends Container {
     Logger.info(`Creating Wrapper (${this.id}), Parent Workspace: (${parent.id})`);
   }
 
+  get full() {
+    return !!this.#isFull;
+  }
+
   set full(v = false) {
     if (!this.parent) return;
     const p = Container.getById(this.parent);
 
     if (!v) {
+      this.#isFull = false;
       this.node.setHeightAuto();
       this.node.setWidthAuto();
     } else if (!!v && p.node.getFlexDirection() === yoga.FLEX_DIRECTION_ROW) {
+      this.#isFull = true;
       this.node.setHeightAuto();
       this.node.setWidthPercent(100);
     } else if (!!v && p.node.getFlexDirection() === yoga.FLEX_DIRECTION_COLUMN) {
+      this.#isFull = true;
       this.node.setWidthAuto();
       this.node.setHeightPercent(100);
     }

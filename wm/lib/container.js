@@ -49,7 +49,7 @@ module.exports = class Container {
   get geo() {
     const layout = this.node.getComputedLayout();
 
-    if (this.parent) {
+    if (this.parent && !!Container.getById(this.parent)) {
       const p = Container.getById(this.parent);
       layout.top += p.geo.y;
       layout.left += p.geo.x;

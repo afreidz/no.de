@@ -19,6 +19,8 @@ const nodeMock = {
   getChildCount: jest.fn(),
   setAlignContent: jest.fn(),
   calculateLayout: jest.fn(),
+  setWidthPercent: jest.fn(),
+  setHeightPercent: jest.fn(),
   getFlexDirection: jest.fn(),
   setFlexDirection: jest.fn(),
   setJustifyContent: jest.fn(),

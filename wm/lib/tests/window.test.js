@@ -13,7 +13,6 @@ const Wrapper = require('../wrapper');
 const Container = require('../container');
 
 // Setup
-let ws;
 beforeEach(() => {
   Object.values(nodeMock).forEach(m => m.mockReset());
 });
@@ -36,7 +35,7 @@ describe('Window', () => {
     expect(Window.getAll().length).toBe(3);
   });
   test('It should set "window" node properties', () => {
-    const w1 = new Window(new Wrapper(ws));
+    const w1 = new Window(new Wrapper());
     expect(nodeMock.setJustifyContent).toHaveBeenCalledWith(yoga.JUSTIFY_FLEX_START);
     expect(nodeMock.setJustifyContent).toHaveBeenCalledTimes(1);
 

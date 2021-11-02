@@ -20,7 +20,7 @@ module.exports = async function () {
     }
     r(info.filter(s => !!s.output.length).map((s, i) => {
       return {
-        id: i,
+        i: i,
         x: s.x,
         y: s.y,
         w: s.width,

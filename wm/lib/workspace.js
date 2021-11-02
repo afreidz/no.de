@@ -5,11 +5,10 @@ const yoga = require('yoga-layout-prebuilt');
 const Logger = require('spice-logger/logger.cjs');
 
 class Workspace extends Container {
-  constructor(screen = { id: 0, x: 0, y: 0, w: 100, h: 100 }) {
+  constructor(screen = { i: 0, x: 0, y: 0, w: 100, h: 100 }) {
     super();
     this.pad = 5;
     this.screen = screen;
-
     this.node.setFlexGrow(1);
     this.node.setWidthAuto();
     this.node.setHeightAuto();
@@ -24,7 +23,7 @@ class Workspace extends Container {
 
 
     new Wrapper(this);
-    Logger.info(`Creating Workspace (${this.id}) with geo: ${JSON.stringify(this.geo)}`);
+    Logger.info(`Creating Workspace (${this.id}) with screen: ${JSON.stringify(this.screen)}`);
   }
 
   append(C) {
@@ -33,11 +32,8 @@ class Workspace extends Container {
   }
 
   remove(C) {
+    if (this.children.length === 1) return;
     super.remove(C);
-    if (this.children.length === 0) {
-      Logger.error(`Workspace ${this.id} has no children!`);
-      new Wrapper(this);
-    }
   }
 
   get geo() {
@@ -50,6 +46,8 @@ class Workspace extends Container {
   static getAll() {
     return Container.getByType(this);
   }
+
+  static getByScreen(i) { }
 }
 
 module.exports = Workspace;
