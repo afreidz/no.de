@@ -4,12 +4,13 @@ const yoga = require('yoga-layout-prebuilt');
 
 class Wrapper extends Container {
   #isFull;
+  #isCollapsed;
+  #tempFlex;
 
   constructor(parent = null) {
     if (parent.constructor.name !== 'Workspace') throw new Error('Wrapper must have a parent of Workspace');
     super();
 
-    this.#isFull = false;
     this.node.setFlexGrow(1);
     this.node.setWidthAuto();
     this.node.setHeightAuto();
@@ -20,6 +21,31 @@ class Wrapper extends Container {
 
     parent.append(this);
     this.emit('info', `Creating Wrapper (${this.id}), Parent Workspace: (${parent.id})`);
+  }
+
+  get collapsed() {
+    return !!this.#isCollapsed;
+  }
+
+  collapse() {
+    const p = Container.getById(this.parent);
+    this.#isCollapsed = true;
+
+    if (p.node.getFlexDirection() === yoga.FLEX_DIRECTION_ROW) {
+      this.#tempFlex = this.node.getFlexGrow();
+      this.node.setFlexGrow(0);
+      this.node.setWidthAuto();
+    } else if (p.node.getFlexDirection() === yoga.FLEX_DIRECTION_COLUMN) {
+      this.#tempFlex = this.node.getFlexGrow();
+      this.node.setFlexGrow(0);
+      this.node.setHeightAuto();
+    }
+  }
+
+  uncollapse() {
+    this.#isCollapsed = false;
+    this.node.setFlexGrow(this.#tempFlex || 1);
+    if (this.full) this.full = true;
   }
 
   get full() {

@@ -1,7 +1,7 @@
 const uuid = require('uuid');
 const X11 = require('./x11');
 const yoga = require('yoga-layout-prebuilt');
-const Logger = require('spice-logger/logger.cjs');
+const Logger = require('no-de-logger/logger.cjs');
 
 const Cache = new Map();
 

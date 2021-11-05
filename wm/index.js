@@ -44,7 +44,7 @@ const Manager = require('./lib/manager');
     if (e.keycode == 20 && e.metaKey) { //cmd+t
       manager.exec('teams');
     }
-    if (e.keycode == 33 && e.metaKey) { //cmd+f
+    if (e.keycode == 33 && e.metaKey && !e.shiftKey) { //cmd+f
       manager.exec('nautilus');
     }
     if (e.keycode == 46 && e.metaKey) { //cmd+c
@@ -87,6 +87,9 @@ const Manager = require('./lib/manager');
     }
     if (e.keycode == 57424 && e.metaKey) {
       manager.increaseOthers(1);
+    }
+    if (e.keycode == 33 && e.metaKey && e.shiftKey) {
+      manager.toggleFloatCurrent();
     }
   });
   ioHook.start();

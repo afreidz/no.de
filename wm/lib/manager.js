@@ -7,7 +7,7 @@ const Wrapper = require('./wrapper');
 const Workspace = require('./workspace');
 const { exec } = require('child_process');
 const getScreenInfo = require('./screen');
-const Logger = require('spice-logger/logger.cjs');
+const Logger = require('no-de-logger/logger.cjs');
 
 class Manager extends Logger {
   constructor(opts = { dbug: false }) {
@@ -68,6 +68,11 @@ class Manager extends Logger {
   redraw() {
     const all = Window.getAll().filter(w => w !== this);
     all.forEach(c => c.draw());
+  }
+
+  toggleFloatCurrent() {
+    if (!this.focusedWindow) return;
+    this.focusedWindow.floating ? this.focusedWindow.unfloat() : this.focusedWindow.float();
   }
 
   increaseCurrent(v = 2) {
