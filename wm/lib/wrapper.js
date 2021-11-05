@@ -16,8 +16,8 @@ class Wrapper extends Container {
     this.node.setHeightAuto();
     this.node.setFlexShrink(0);
     this.node.setAlignItems(yoga.ALIGN_STRETCH);
-    this.node.setFlexDirection(yoga.FLEX_DIRECTION_ROW);
     this.node.setJustifyContent(yoga.JUSTIFY_FLEX_START);
+    this.node.setFlexDirection(yoga.FLEX_DIRECTION_COLUMN);
 
     parent.append(this);
     Logger.info(`Creating Wrapper (${this.id}), Parent Workspace: (${parent.id})`);
@@ -46,6 +46,39 @@ class Wrapper extends Container {
     }
 
     this.root.refresh();
+  }
+
+  increase(v = 2, wid = null) {
+
+    const n = this.children.length;
+    if (n === 1) return;
+
+    const win = Container.getById(wid) || Container.getById(this.children[0]);
+    const current = win.node.getFlexGrow();
+    const val = current + (v / 10);
+    this.emit('info', `setting ${win.id} to fg: ${val <= 1 ? 1 : val}`);
+    win.node.setFlexGrow(val <= 1 ? 1 : val);
+
+    Container.getById(this.parent).redraw();
+  }
+
+  decrease(v = 2, wid = null) {
+    const n = this.children.length;
+    if (n === 1) return;
+
+    const win = Container.getById(wid)
+      || Container.getById(this.children[0]);
+
+    this.children.forEach(c => {
+      if (c === win.id) return;
+      const us = Container.getById(c);
+
+      const current = us.node.getFlexGrow();
+      const val = current + (v / 10);
+      us.node.setFlexGrow(val <= 1 ? 1 : val);
+    });
+
+    Container.getById(this.parent).redraw();
   }
 
   remove(C) {

@@ -18,8 +18,11 @@ const Manager = require('./lib/manager');
     // console.log('Key ', e.keycode);
 
     // Manager
-    if (e.keycode == 31 && e.metaKey) {
+    if (e.keycode == 31 && e.metaKey && !e.shiftKey) {
       manager.split = !manager.split;
+    }
+    if (e.keycode == 31 && e.metaKey && e.shiftKey) {
+      manager.flip();
     }
     if (e.keycode == 17 && e.metaKey) {
       manager.kill();
@@ -35,9 +38,9 @@ const Manager = require('./lib/manager');
     if (e.keycode == 21 && e.metaKey) { //cmd+d
       manager.exec('discord');
     }
-    if (e.keycode == 31 && e.metaKey) { //cmd+s
-      manager.exec('slack');
-    }
+    // if (e.keycode == 31 && e.metaKey) { //cmd+s
+    //   manager.exec('slack');
+    // }
     if (e.keycode == 20 && e.metaKey) { //cmd+t
       manager.exec('teams');
     }
@@ -76,6 +79,14 @@ const Manager = require('./lib/manager');
     }
     if (e.keycode == 9 && e.metaKey) {
       manager.workspaces[7].active = true;
+    }
+
+    // Resize
+    if (e.keycode == 57416 && e.metaKey) {
+      manager.increaseCurrent(1);
+    }
+    if (e.keycode == 57424 && e.metaKey) {
+      manager.increaseOthers(1);
     }
   });
   ioHook.start();

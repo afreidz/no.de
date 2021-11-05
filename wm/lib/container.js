@@ -15,7 +15,9 @@ module.exports = class Container {
 
     this.node = node;
     this.X11 = opts.x11;
+    this.mapped = false;
     this.#children = new Set;
+    this.node = yoga.Node.create();
     this.id = opts.id || uuid.v4();
 
     if (opts.w) this.node.setWidth(opts.w);
@@ -75,6 +77,7 @@ module.exports = class Container {
     if (!this.X11 || !(this.X11 instanceof X11)) throw new Error(`Cannot draw container with no X11 client`);
     Logger.info(`Hiding window ${this.id}`);
     this.X11.client.UnmapWindow(this.id);
+    this.mapped = false;
   }
 
   draw() {
@@ -84,7 +87,7 @@ module.exports = class Container {
     this.X11.client.UnmapWindow(this.id);
     this.X11.client.MoveWindow(this.id, this.geo.x, this.geo.y);
     this.X11.client.ResizeWindow(this.id, this.geo.w, this.geo.h);
-    this.X11.client.MapWindow(this.id);
+    if (!this.mapped) this.X11.client.MapWindow(this.id);
   }
 
   append(container) {

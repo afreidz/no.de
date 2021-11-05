@@ -10,7 +10,7 @@ class Workspace extends Container {
 
   constructor(screen = { i: 0, x: 0, y: 0, w: 100, h: 100 }) {
     super();
-    this.pad = 10;
+    this.pad = 5;
     this.active = false;
     this.screen = screen;
     this.node.setFlexGrow(1);
@@ -24,6 +24,10 @@ class Workspace extends Container {
     this.node.setAlignContent(yoga.ALIGN_STRETCH);
     this.node.setFlexDirection(yoga.FLEX_DIRECTION_ROW);
     this.node.setJustifyContent(yoga.JUSTIFY_FLEX_START);
+    this.node.setFlexDirection(yoga.FLEX_DIRECTION_COLUMN);
+
+    // For Bar
+    this.node.setPadding(yoga.EDGE_TOP, 40);
 
     new Wrapper(this);
     Logger.info(`Creating Workspace (${this.id}) with screen: ${JSON.stringify(this.screen)}`);
@@ -45,6 +49,22 @@ class Workspace extends Container {
         Window.getById(w).hide();
       });
     }
+  }
+
+  flip() {
+    const row = yoga.FLEX_DIRECTION_ROW;
+    const col = yoga.FLEX_DIRECTION_COLUMN;
+    const cur = this.node.getFlexDirection();
+    const now = cur === row ? col : row;
+
+    this.node.setFlexDirection(now);
+    this.children.forEach(wrap => {
+      const child = Container.getById(wrap);
+      if (child.full) child.full = true;
+      child.node.setFlexDirection(now);
+    });
+
+    this.redraw();
   }
 
   redraw() {

@@ -69,6 +69,20 @@ class Manager {
     all.forEach(c => c.draw());
   }
 
+  increaseCurrent(v = 2) {
+    const wrap = Wrapper.getById(this.focusedWindow.parent);
+    wrap.increase(v, this.focusedWindow.id);
+  }
+
+  increaseOthers(v = 2) {
+    const wrap = Wrapper.getById(this.focusedWindow.parent);
+    wrap.decrease(v, this.focusedWindow.id);
+  }
+
+  flip() {
+    Workspace.getByCoords(...this.mouse).flip();
+  }
+
   getWinName(wid) {
     const { WM_NAME, STRING } = this.client.atoms;
     return new Promise(r => {
@@ -99,7 +113,7 @@ class Manager {
     if (!!Window.getById(wid)) return;
     this.client.ChangeWindowAttributes(wid, X11.eventMasks.window);
 
-    const wrapper = this.split
+    const wrapper = (Wrapper.getByCoords(...this.mouse).children.length > 0 && this.split)
       ? new Wrapper(Workspace.getByCoords(...this.mouse))
       : Wrapper.getByCoords(...this.mouse);
 
