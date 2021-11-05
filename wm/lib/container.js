@@ -5,15 +5,14 @@ const Logger = require('spice-logger/logger.cjs');
 
 const Cache = new Map();
 
-module.exports = class Container {
+module.exports = class Container extends Logger {
   #children;
 
   constructor(opts = { x11: null, id: null }) {
     if (opts.x11 && !(opts.x11 instanceof X11)) throw new Error(`opts.x11 must be an instance of X11`);
     if (opts.id && Cache.has(opts.id)) throw new Error(`Container with ID: ${opts.id} already exists`);
-    const node = yoga.Node.create();
+    super('Window Manager');
 
-    this.node = node;
     this.X11 = opts.x11;
     this.mapped = false;
     this.#children = new Set;
@@ -75,7 +74,7 @@ module.exports = class Container {
 
   hide() {
     if (!this.X11 || !(this.X11 instanceof X11)) throw new Error(`Cannot draw container with no X11 client`);
-    Logger.info(`Hiding window ${this.id}`);
+    this.emit('', `Hiding window ${this.id}`);
     this.X11.client.UnmapWindow(this.id);
     this.mapped = false;
   }
@@ -83,8 +82,7 @@ module.exports = class Container {
   draw() {
     if (!this.X11 || !(this.X11 instanceof X11)) throw new Error(`Cannot draw container with no X11 client`);
     this.root.refresh();
-    Logger.info(`Drawing window ${this.id}`);
-    this.X11.client.UnmapWindow(this.id);
+    this.emit('info', `Drawing window ${this.id} - Geo: ${JSON.stringify(this.geo)}`);
     this.X11.client.MoveWindow(this.id, this.geo.x, this.geo.y);
     this.X11.client.ResizeWindow(this.id, this.geo.w, this.geo.h);
     if (!this.mapped) this.X11.client.MapWindow(this.id);
@@ -94,7 +92,7 @@ module.exports = class Container {
     if (!(container instanceof Container)) throw new Error(`Cannot append to ${this.id}.  ${container} is not an instance of Container`);
     if (this.ancestors.includes(container.id)) throw new Error(`Cannot append ${container.id}. It is an ancestor of ${this.id}`);
     if (this.#children.has(container.id)) throw new Error(`Cannot append ${container.id}.  It is already a child of ${this.id}`);
-    Logger.info(`Appending ${container?.id} to ${this.id}`);
+    this.emit('info', `Appending ${container?.id} to ${this.id}`);
     container.parent = this.id;
     this.node.insertChild(container.node, this.node.getChildCount());
     this.#children.add(container.id);
@@ -103,7 +101,7 @@ module.exports = class Container {
   remove(container) {
     if (!(container instanceof Container)) throw new Error(`Cannot revmove from ${this.id}.  ${container} is not an instance of Container`);
     if (!this.#children.has(container.id)) throw new Error(`Cannot remove ${container.id}.  It is not a child of ${this.id}`);
-    Logger.info(`Removing ${container?.id} from ${this.id}`);
+    this.emit('info', `Removing ${container?.id} from ${this.id}`);
     container.parent = null;
     this.node.removeChild(container.node);
     this.#children.delete(container.id);

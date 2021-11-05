@@ -1,5 +1,6 @@
-const Winston = require('winston');
 const { join } = require('path');
+const Winston = require('winston');
+const { EventEmitter } = require('events');
 
 const logger = Winston.createLogger({
   level: 'info',
@@ -10,4 +11,19 @@ const logger = Winston.createLogger({
   ],
 });
 
-module.exports = logger;
+class LogEmitter extends EventEmitter {
+  constructor(scope = '') {
+    super();
+    this.scope = scope;
+
+    this.on('error', async (msg, data) => {
+      logger.error(`${scope} | ${msg}`);
+    });
+
+    this.on('info', async (msg, data) => {
+      logger.info(`${scope} | ${msg}`);
+    });
+  }
+}
+
+module.exports = LogEmitter;

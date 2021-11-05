@@ -1,6 +1,6 @@
 {
-  "name": "spice-logger",
-  "description": "spice desktop environment global logger",
+  "name": "no-de-logger",
+  "description": "environment global logger",
   "type": "module",
   "main": "index.js",
   "dependencies": {

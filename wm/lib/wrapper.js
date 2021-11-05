@@ -1,7 +1,6 @@
 const X11 = require('./x11');
 const Container = require('./container');
 const yoga = require('yoga-layout-prebuilt');
-const Logger = require('spice-logger/logger.cjs');
 
 class Wrapper extends Container {
   #isFull;
@@ -20,7 +19,7 @@ class Wrapper extends Container {
     this.node.setFlexDirection(yoga.FLEX_DIRECTION_COLUMN);
 
     parent.append(this);
-    Logger.info(`Creating Wrapper (${this.id}), Parent Workspace: (${parent.id})`);
+    this.emit('info', `Creating Wrapper (${this.id}), Parent Workspace: (${parent.id})`);
   }
 
   get full() {

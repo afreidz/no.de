@@ -1,6 +1,6 @@
 {
-  "name": "spice-wm",
-  "description": "spice desktop environment window manager",
+  "name": "no.de-wm",
+  "description": "environment window manager",
   "type": "commonjs",
   "bin": "index.js",
   "dependencies": {

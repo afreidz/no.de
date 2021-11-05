@@ -9,8 +9,9 @@ const { exec } = require('child_process');
 const getScreenInfo = require('./screen');
 const Logger = require('spice-logger/logger.cjs');
 
-class Manager {
+class Manager extends Logger {
   constructor(opts = { dbug: false }) {
+    super('Window Manager');
     this.debug = opts.debug;
     this.split = false;
     this.id = uuid.v4();
@@ -42,15 +43,15 @@ class Manager {
     this.screens = screens;
     this.xscreen = display.screen[0];
 
-    Logger.info(`Initializing Window Manager...`);
-    client.ChangeWindowAttributes(this.xscreen.root, X11.eventMasks.manager, Logger.error);
-    Logger.info(`${this.xscreen.root} is now the window manager`);
+    this.emit('info', `Initializing Window Manager...`);
+    client.ChangeWindowAttributes(this.xscreen.root, X11.eventMasks.manager, e => this.emit('error', e.message));
+    this.emit('info', `${this.xscreen.root} is now the window manager`);
 
     ioHook.on('mousemove', e => (this.mouse = [e.x, e.y]));
     ioHook.start();
 
     this.listen();
-    exec(`${join(__dirname, '../../desktop', 'index.js')} ${this.id}`);
+    exec(`${join(__dirname, '../../ui/bin', 'desktop.cjs')} ${this.id}`);
     return this;
   }
 
@@ -87,7 +88,7 @@ class Manager {
     const { WM_NAME, STRING } = this.client.atoms;
     return new Promise(r => {
       this.client.GetProperty(0, wid, WM_NAME, STRING, 0, 10000000, (err, prop) => {
-        if (err) return Logger.error(err);
+        if (err) return this.emit('error', err);
         const name = prop.data.toString();
         r(name);
       });
@@ -95,9 +96,9 @@ class Manager {
   }
 
   async setDesktop(wid) {
-    Logger.info(`Checking if ${wid} is desktop`);
+    this.emit('info', `Checking if ${wid} is desktop`);
     if (this.desktopId === await this.getWinName(wid)) {
-      Logger.info(`${wid} is now desktop`);
+      this.emit('info', `${wid} is now desktop`);
       this.desktop = wid;
     }
   }
@@ -122,7 +123,7 @@ class Manager {
   }
 
   handleDestroy(wid) {
-    Logger.info(`Destroy Request for ${wid}`);
+    this.emit('info', `Destroy Request for ${wid}`);
     const win = Window.getById(wid);
     if (!win) return;
 

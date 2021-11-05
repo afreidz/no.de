@@ -3,7 +3,6 @@ const Window = require('./window');
 const Wrapper = require('./wrapper');
 const Container = require('./container');
 const yoga = require('yoga-layout-prebuilt');
-const Logger = require('spice-logger/logger.cjs');
 
 class Workspace extends Container {
   #active;
@@ -22,7 +21,6 @@ class Workspace extends Container {
     this.node.setFlexWrap(yoga.WRAP_WRAP);
     this.node.setAlignItems(yoga.ALIGN_STRETCH);
     this.node.setAlignContent(yoga.ALIGN_STRETCH);
-    this.node.setFlexDirection(yoga.FLEX_DIRECTION_ROW);
     this.node.setJustifyContent(yoga.JUSTIFY_FLEX_START);
     this.node.setFlexDirection(yoga.FLEX_DIRECTION_COLUMN);
 
@@ -30,7 +28,7 @@ class Workspace extends Container {
     this.node.setPadding(yoga.EDGE_TOP, 40);
 
     new Wrapper(this);
-    Logger.info(`Creating Workspace (${this.id}) with screen: ${JSON.stringify(this.screen)}`);
+    this.emit('info', `Creating Workspace (${this.id}) with screen: ${JSON.stringify(this.screen)}`);
   }
 
   get active() {
