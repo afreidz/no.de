@@ -47,7 +47,7 @@ class Manager extends Logger {
     ioHook.start();
 
     this.listen();
-    exec(`${join(__dirname, '../../ui/bin', 'desktop.cjs')} ${this.id}`);
+    exec(`${join(__dirname, '../../ui/desktop', 'launch.js')} ${this.id}`);
     return this;
   }
 

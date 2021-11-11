@@ -1,0 +1,9 @@
+:root {
+  --font-size: 10px;
+  --blur-radius: 1rem;
+  --panel-radius: 0px;
+  --text-color: #fff;
+  --panel-background: rgba(0,0,0,0.6);
+  --disabled-text: rgba(255,255,255,0.4);
+  --panel-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+}

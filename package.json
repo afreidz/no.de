@@ -1,14 +1,15 @@
 {
   "name": "no.de",
   "bin": {
-    "spicewm:": "./wm/index.js"
+    "no.de": "./wm/index.js",
+    "no.de-desktop": "./ui/desktop/launch.js"
   },
   "scripts": {
     "test": "npm t -w wm"
   },
   "workspaces": [
     "wm",
-    "ui",
-    "logger"
+    "logger",
+    "ui/desktop"
   ]
 }
