@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const ioHook = require('iohook');
-const Manager = require('./lib/manager');
+const Manager = require('./src/manager');
 
 (async () => {
   const manager = await (new Manager());
@@ -13,6 +13,8 @@ const Manager = require('./lib/manager');
   manager.addWorkspace(1);
   manager.addWorkspace(1);
   manager.addWorkspace(1);
+  manager.activateWorkspace(0);
+  manager.activateWorkspace(4);
 
   ioHook.on('keydown', e => {
     // console.log('Key ', e.keycode);
@@ -57,39 +59,42 @@ const Manager = require('./lib/manager');
 
     // Workspaces
     if (e.keycode == 2 && e.metaKey) {
-      manager.workspaces[0].active = true;
+      manager.activateWorkspace(0);
     }
     if (e.keycode == 3 && e.metaKey) {
-      manager.workspaces[1].active = true;
+      manager.activateWorkspace(1);
     }
     if (e.keycode == 4 && e.metaKey) {
-      manager.workspaces[2].active = true;
+      manager.activateWorkspace(2);
     }
     if (e.keycode == 5 && e.metaKey) {
-      manager.workspaces[3].active = true;
+      manager.activateWorkspace(3);
     }
     if (e.keycode == 6 && e.metaKey) {
-      manager.workspaces[4].active = true;
+      manager.activateWorkspace(4);
     }
     if (e.keycode == 7 && e.metaKey) {
-      manager.workspaces[5].active = true;
+      manager.activateWorkspace(5);
     }
     if (e.keycode == 8 && e.metaKey) {
-      manager.workspaces[6].active = true;
+      manager.activateWorkspace(6);
     }
     if (e.keycode == 9 && e.metaKey) {
-      manager.workspaces[7].active = true;
+      manager.activateWorkspace(7);
     }
 
     // Resize
     if (e.keycode == 57416 && e.metaKey) {
-      manager.increaseCurrent(1);
+      manager.changeVertical(5);
     }
     if (e.keycode == 57424 && e.metaKey) {
-      manager.increaseOthers(1);
+      manager.changeVertical(-5);
     }
-    if (e.keycode == 33 && e.metaKey && e.shiftKey) {
-      manager.toggleFloatCurrent();
+    if (e.keycode == 57419 && e.metaKey) {
+      manager.changeHorizontal(-5);
+    }
+    if (e.keycode == 57421 && e.metaKey) {
+      manager.changeHorizontal(5);
     }
   });
   ioHook.start();
