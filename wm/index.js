@@ -4,6 +4,7 @@ const Manager = require('./src/manager');
 
 (async () => {
   const manager = await (new Manager());
+  let drag = null;
 
   manager.addWorkspace(0);
   manager.addWorkspace(0);
@@ -95,6 +96,9 @@ const Manager = require('./src/manager');
     }
     if (e.keycode == 57421 && e.metaKey) {
       manager.changeHorizontal(5);
+    }
+    if (e.keycode == 33 && e.metaKey && e.shiftKey) { //cmd+f
+      manager.toggleFloat();
     }
   });
   ioHook.start();

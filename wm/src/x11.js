@@ -1,5 +1,18 @@
 const x11 = require('x11');
-const { SubstructureNotify, SubstructureRedirect, ResizeRedirect, EnterWindow, PropertyChange, KeyPress, LeaveWindow } = x11.eventMask;
+const {
+  KeyPress,
+  EnterWindow,
+  LeaveWindow,
+  ButtonPress,
+  Button1Motion,
+  ButtonRelease,
+  ResizeRedirect,
+  PropertyChange,
+  SubstructureNotify,
+  SubstructureRedirect,
+} = x11.eventMask;
+
+console.log(x11.eventMask);
 
 const display = new Promise((resolve, reject) => {
   x11.createClient((err, display) => {
@@ -23,8 +36,8 @@ class X11 {
   }
 
   static eventMasks = {
-    manager: { eventMask: SubstructureNotify | SubstructureRedirect | ResizeRedirect | KeyPress },
-    window: { eventMask: EnterWindow | LeaveWindow | KeyPress },
+    manager: { eventMask: SubstructureNotify | SubstructureRedirect },
+    window: { eventMask: EnterWindow | LeaveWindow },
   };
 }
 

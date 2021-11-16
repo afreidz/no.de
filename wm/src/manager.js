@@ -1,6 +1,7 @@
 const X11 = require('./x11.js');
 const ioHook = require('iohook');
 const { join } = require('path');
+const Float = require('./float.js');
 const Window = require('./window.js');
 const Wrapper = require('./splitter.js');
 const { exec } = require('child_process');
@@ -13,6 +14,7 @@ class Manager extends Logger {
   constructor(opts = { dbug: false }) {
     super('Window Manager');
 
+    this.drag = null;
     this.split = false;
     this.id = +new Date;
     this.desktop = null;
@@ -43,11 +45,20 @@ class Manager extends Logger {
       this.emit('info', `${this.xscreen.root} is now the window manager`);
     }
 
+    ioHook.on('mousedrag', e => {
+      if (e.shiftKey && e.metaKey) {
+        this.resizeCurrent(e.x, e.y);
+      } else if (e.metaKey && !e.shiftKey) {
+        this.moveCurrent(e.x, e.y)
+      }
+    });
     ioHook.on('mousemove', e => (this.mouse = [e.x, e.y]));
+    ioHook.on('mouseclick', e => this.raiseCurrent());
     ioHook.start();
 
+
     this.listen();
-    exec(`${join(__dirname, '../../ui/desktop', 'launch.js')} ${this.id}`);
+    exec(`${join(__dirname, '../../ui/bin/', 'desktop.cjs')} ${this.id}`);
     return this;
   }
 
@@ -61,6 +72,7 @@ class Manager extends Logger {
     };
     const ws = new Workspace(geo, screen);
     new Wrapper({ parent: ws.id });
+    new Float({ parent: ws.id });
     this.workspaces.push(ws);
     this.activateWorkspace(this.workspaces.length - 1);
   }
@@ -71,6 +83,22 @@ class Manager extends Logger {
     ws.active = true;
     this.layout(ws.id);
     others.forEach(ws => this.layout(ws.id));
+  }
+
+  toggleFloat() {
+    const win = this.focusedWindow
+      || Window.getByCoords(...this.mouse);
+
+    if (!win) return;
+
+    win.floating = !win.floating;
+    this.layout(win.root);
+
+    if (win.floating) {
+      this.client.RaiseWindow(win.id);
+      this.client.MoveWindow(win.id, win.x, win.y);
+      this.client.ResizeWindow(win.id, win.w, win.h);
+    }
   }
 
   exec(cmd) {
@@ -87,15 +115,18 @@ class Manager extends Logger {
 
     const workspace = Workspace.getById(ws);
     const windows = workspace.descendents.filter(d => !!(Window.getById(d) instanceof Window));
+    const floaters = workspace.floatContainer.children;
 
-    windows.forEach(w => {
+    [...windows, ...floaters].forEach(w => {
       const win = Window.getById(w);
       if (!workspace.active) {
         this.client.UnmapWindow(win.id);
         win.mapped = false;
       } else {
-        this.client.MoveWindow(win.id, win.geo.x, win.geo.y);
-        this.client.ResizeWindow(win.id, win.geo.w, win.geo.h);
+        if (!win.floating) {
+          this.client.MoveWindow(win.id, win.geo.x, win.geo.y);
+          this.client.ResizeWindow(win.id, win.geo.w, win.geo.h);
+        }
         if (!win.mapped) {
           win.mapped = true;
           this.client.MapWindow(win.id);
@@ -216,6 +247,7 @@ class Manager extends Logger {
     const wrap = Wrapper.getById(win.parent);
     const ws = Workspace.getById(win.root);
     wrap.remove(win);
+    win.deref();
     if (wrap.children.length === 0 && ws.children.length > 1) ws.remove(wrap);
     this.layout(ws.id);
     this.focusedWindow = Window.getByCoords(...this.mouse);
@@ -231,6 +263,35 @@ class Manager extends Logger {
     this.emit('info', `Mouse Exit Notify for ${wid}`);
     this.focusedWindow = null;
     this.client.SetInputFocus(this.xscreen.root);
+  }
+
+  moveCurrent(x, y) {
+    if (!this.focusedWindow?.floating) return;
+    if (!this.drag) this.drag = { x, y };
+    const win = this.focusedWindow;
+    const dx = x - this.drag.x;
+    const dy = y - this.drag.y;
+    this.client.MoveWindow(win.id, (win.x + dx), (win.y + dy));
+    win.x += dx;
+    win.y += dy;
+    this.drag = { x, y };
+  }
+
+  resizeCurrent(x, y) {
+    if (!this.focusedWindow?.floating) return;
+    if (!this.drag) this.drag = { x, y };
+    const win = this.focusedWindow;
+    const dx = x - this.drag.x;
+    const dy = y - this.drag.y;
+    this.client.ResizeWindow(win.id, (win.w + dx), (win.h + dy));
+    win.w += dx;
+    win.h += dy;
+    this.drag = { x, y };
+  }
+
+  raiseCurrent() {
+    if (!this.focusedWindow?.floating) return;
+    this.client.RaiseWindow(this.focusedWindow.id);
   }
 
   async listen() {
@@ -262,6 +323,5 @@ class Manager extends Logger {
     });
   }
 }
-
 
 module.exports = Manager;

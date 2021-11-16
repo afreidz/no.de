@@ -7,6 +7,7 @@ class Workspace extends Container {
 
   constructor(geo = { x: 0, y: 0, w: 1, h: 1, }, i = 0, ratios = []) {
     super({ dir: 'ltr' });
+    this.floatContainer = null;
     this.#active = false;
     this.ratios = ratios;
     this.screen = i;
@@ -34,10 +35,15 @@ class Workspace extends Container {
   }
 
   append(c) {
-    super.append(c);
-    c.dir = this.dir === 'ltr' ? 'ttb' : 'ltr';
-    if (!this.ratios[this.children.indexOf(c.id)]) {
-      this.ratios[this.children.indexOf(c.id)] = 1;
+    if (c.constructor.name === 'Float') {
+      this.floatContainer = c;
+      c.geo = this.geo;
+    } else {
+      super.append(c);
+      c.dir = this.dir === 'ltr' ? 'ttb' : 'ltr';
+      if (!this.ratios[this.children.indexOf(c.id)]) {
+        this.ratios[this.children.indexOf(c.id)] = 1;
+      }
     }
   }
 

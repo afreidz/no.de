@@ -72,7 +72,6 @@ class Container {
     if (!(c instanceof Container)) return this.emit('error', 'Appended node must be a <Container>');
     c.parent = null;
     this.#children.delete(c.id);
-    c.deref();
   }
 
   deref() {

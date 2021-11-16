@@ -17,10 +17,10 @@ class Splitter extends Container {
     this.ratios = opts.ratios || [];
   }
 
-  append(c) {
+  append(c, r = 1) {
     super.append(c);
     if (!this.ratios[this.children.indexOf(c.id)]) {
-      this.ratios[this.children.indexOf(c.id)] = 1;
+      this.ratios[this.children.indexOf(c.id)] = r;
     }
   }
 
