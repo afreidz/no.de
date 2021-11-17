@@ -12,8 +12,6 @@ const {
   SubstructureRedirect,
 } = x11.eventMask;
 
-console.log(x11.eventMask);
-
 const display = new Promise((resolve, reject) => {
   x11.createClient((err, display) => {
     if (err) return reject(err);

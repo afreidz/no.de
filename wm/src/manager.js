@@ -85,9 +85,11 @@ class Manager extends Logger {
     others.forEach(ws => this.layout(ws.id));
   }
 
-  toggleFloat() {
-    const win = this.focusedWindow
-      || Window.getByCoords(...this.mouse);
+  toggleFloat(wid) {
+    const win = !!wid
+      ? Window.getById(wid)
+      : (this.focusedWindow
+        || Window.getByCoords(...this.mouse));
 
     if (!win) return;
 
@@ -202,17 +204,30 @@ class Manager extends Logger {
     });
   }
 
+  getWinClass(wid) {
+    const { WM_CLASS, STRING } = this.client.atoms;
+    return new Promise(r => {
+      this.client.GetProperty(0, wid, WM_CLASS, STRING, 0, 10000000, (err, prop) => {
+        if (err) return this.emit('error', err);
+        const hints = prop.data.toString();
+        r(hints);
+      });
+    });
+  }
+
   async setDesktop(wid) {
     if (!!this.desktop) return;
-    this.emit('info', `Checking if ${wid} is desktop`);
-    if (this.desktopId === await this.getWinName(wid)) {
+    const name = await this.getWinName(wid);
+    this.emit('info', `Checking if ${wid}:${name} is desktop`);
+    if (this.desktopId === name) {
       this.emit('info', `${wid} is now desktop`);
       this.desktop = wid;
     }
   }
 
-  handleMap(wid) {
-    this.emit('info', `Map Request for ${wid}`);
+  async handleMap(wid) {
+    const name = await this.getWinName(wid);
+    this.emit('info', `Map Request for ${wid}:${name}`);
     if (this.desktop === wid) {
       this.client.MoveWindow(wid, 0, 0);
       this.client.ResizeWindow(wid, this.xscreen.pixel_width, this.xscreen.pixel_height);
@@ -235,7 +250,14 @@ class Manager extends Logger {
     if (this.split && wrapper.children.length !== 0) wrapper = new Wrapper({ parent: ws.id });
 
     const win = new Window({ parent: wrapper.id, id: wid });
-    this.layout(ws.id);
+    const wmclass = await this.getWinClass(win.id);
+
+    if (wmclass.toLowerCase().includes('nautilus')) {
+      this.toggleFloat(win.id);
+    } else {
+      this.layout(ws.id);
+    }
+
     this.client.MapWindow(wid);
   }
 
