@@ -4,30 +4,47 @@
       <Item on:click={() => (menuActive = !menuActive)}>
         {#if menuActive}⬤{:else}◯{/if}
       </Item>
-      <Item><small>1</small></Item>
-      <Item><small>2</small></Item>
-      <Item remAfter={1}><small class="active">3</small></Item>
+
+      {#each left as ws, i}
+      <Item remAfter={i === left.length ? 1 : 0}>
+        <small class:active={ws.active}>{ws.text}</small>
+      </Item>
+      {/each}
     </Group>
     <Group>
-      <Item><small class="active">⏲ 10:55</small></Item>
+      <Item><small class="active">⏲ {formattedTime}</small></Item>
     </Group>
   </div>
   <div class="screen">
     <Group>
-      <Item remBefore={1}><small>4</small></Item>
-      <Item><small>5</small></Item>
-      <Item remAfter={1}><small class="active">6</small></Item>
+      {#each right as ws, i}
+      <Item remBefore={i === 0} remAfter={i === left.length ? 1 : 0}>
+        <small class:active={ws.active}>{ws.text}</small>
+      </Item>
+      {/each}
     </Group>
     <Group>
-      <Item><small class="active">⏲ 10:55</small></Item>
+      <Item><small class="active">⏲ {formattedTime}</small></Item>
     </Group>
   </div>
 </section>
 
 <script>
+  import ws from '$lib/stores/wm';
   import Item from './item.svelte';
   import Group from './group.svelte';
+  import { time } from '$lib/stores/clock';
   let menuActive = false;
+  let formattedTime;
+  let left = [];
+  let right = [];
+
+  $: if ($ws) {
+    left = $ws.filter(ws => ws.screen === 0);
+    right = $ws.filter(ws => ws.screen === 1);
+  }
+
+  $: if ($time) formattedTime = $time.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric' });
 </script>
 
 <style>

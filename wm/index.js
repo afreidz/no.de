@@ -4,7 +4,6 @@ const Manager = require('./src/manager');
 
 (async () => {
   const manager = await (new Manager());
-  let drag = null;
 
   manager.addWorkspace(0);
   manager.addWorkspace(0);

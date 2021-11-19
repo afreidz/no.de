@@ -1,17 +1,21 @@
 const Splitter = require('./splitter.js');
 const updateLayout = require('./layout.js');
 const Container = require('./container.js');
+let count = 1;
 
 class Workspace extends Container {
   #active;
 
-  constructor(geo = { x: 0, y: 0, w: 1, h: 1, }, i = 0, ratios = []) {
+  constructor(geo = { x: 0, y: 0, w: 1, h: 1, }, i = 0, ratios = [], text = count) {
     super({ dir: 'ltr' });
     this.floatContainer = null;
     this.#active = false;
     this.ratios = ratios;
     this.screen = i;
     this.geo = geo;
+    this.text = count;
+
+    count += 1;
   }
 
   get active() {
@@ -24,6 +28,16 @@ class Workspace extends Container {
     if (!!v) {
       const others = Workspace.getByScreen(this.screen).filter(ws => ws.id !== this.id);
       others.forEach(ws => (ws.active = false));
+    }
+  }
+
+  serialize() {
+    return {
+      dir: this.dir,
+      text: this.text,
+      screen: this.screen,
+      active: this.active,
+      children: this.children.length,
     }
   }
 

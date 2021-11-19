@@ -7,8 +7,9 @@ const Wrapper = require('./splitter.js');
 const { exec } = require('child_process');
 const updateLayout = require('./layout.js');
 const getScreenInfo = require('./screen.js');
+const IPCClient = require('no.de-ipc/client');
 const { Workspace } = require('./workspace.js');
-const Logger = require('no-de-logger/logger.cjs');
+const Logger = require('no.de-logger/logger.cjs');
 
 class Manager extends Logger {
   constructor(opts = { dbug: false }) {
@@ -21,6 +22,15 @@ class Manager extends Logger {
     this.workspaces = [];
     this.debug = opts.debug;
     this.mouse = { x: 0, y: 0 };
+    this.ipc = new IPCClient(['wm']);
+
+    this.ipc.on('wm', data => {
+      console.log(data);
+      if (!data.msg === 'query') return;
+      if (data.type === 'workspaces') {
+        this.ipc.send('wm', { message: 'workspaces', workspaces: this.workspaces.map(ws => ws.serialize()) });
+      }
+    })
 
     return this.init();
   }
@@ -59,6 +69,7 @@ class Manager extends Logger {
 
     this.listen();
     exec(`${join(__dirname, '../../ui/bin/', 'desktop.cjs')} ${this.id}`);
+    await this.ipc.send('wm', { message: 'initialized' });
     return this;
   }
 
@@ -75,6 +86,7 @@ class Manager extends Logger {
     new Float({ parent: ws.id });
     this.workspaces.push(ws);
     this.activateWorkspace(this.workspaces.length - 1);
+    this.ipc.send('wm', { message: 'workspace-added', workspaces: this.workspaces.map(ws => ws.serialize()) });
   }
 
   activateWorkspace(n = 0) {
@@ -83,6 +95,7 @@ class Manager extends Logger {
     ws.active = true;
     this.layout(ws.id);
     others.forEach(ws => this.layout(ws.id));
+    this.ipc.send('wm', { message: 'workspace-activated', workspaces: this.workspaces.map(ws => ws.serialize()) });
   }
 
   toggleFloat(wid) {
@@ -191,6 +204,7 @@ class Manager extends Logger {
 
     ws.flip();
     this.layout(ws.id);
+    this.ipc.send('wm', { message: 'layout-flip', workspaces: this.workspaces.map(ws => ws.serialize()) });
   }
 
   getWinName(wid) {
