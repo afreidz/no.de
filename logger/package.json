@@ -1,5 +1,5 @@
 {
-  "name": "no-de-logger",
+  "name": "no.de-logger",
   "description": "environment global logger",
   "type": "module",
   "main": "index.js",
