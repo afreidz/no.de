@@ -9,6 +9,7 @@
   },
   "workspaces": [
     "wm",
+    "ipc",
     "logger",
     "ui"
   ]
