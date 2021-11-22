@@ -1,8 +1,8 @@
 {
   "scripts": {
-    "dev": "svelte-kit dev",
+    "start": "npm run dev",
+    "dev": "svelte-kit dev -p $PORT",
     "build": "svelte-kit build",
-    "start": "npm run build && echo 'start server'",
     "lint": "prettier --ignore-path .gitignore --check --plugin-search-dir=. . && eslint --ignore-path .gitignore .",
     "format": "prettier --ignore-path .gitignore --write --plugin-search-dir=. ."
   },
