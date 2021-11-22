@@ -1,8 +1,7 @@
 {
   "name": "no.de",
   "bin": {
-    "no.de": "./wm/index.js",
-    "no.de-desktop": "./ui/desktop/launch.js"
+    "no.de": "./cli/index.js"
   },
   "scripts": {
     "test": "npm t -w wm"
@@ -10,6 +9,7 @@
   "workspaces": [
     "wm",
     "ipc",
+    "cli",
     "logger",
     "ui"
   ]
