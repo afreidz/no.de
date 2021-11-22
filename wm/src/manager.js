@@ -25,12 +25,21 @@ class Manager extends Logger {
     this.ipc = new IPCClient(['wm']);
 
     this.ipc.on('wm', data => {
-      console.log(data);
-      if (!data.msg === 'query') return;
-      if (data.type === 'workspaces') {
-        this.ipc.send('wm', { message: 'workspaces', workspaces: this.workspaces.map(ws => ws.serialize()) });
+      // console.log(data);
+
+      switch (data.msg) {
+        case 'query':
+          if (data.type === 'workspaces') {
+            this.ipc.send('wm', { message: 'workspaces', workspaces: this.workspaces.map(ws => ws.serialize()) });
+          }
+          break;
+        case 'command':
+          if (data.command === 'activate-workspace') {
+            this.activateWorkspace(data.args[0]);
+          }
+          break;
       }
-    })
+    });
 
     return this.init();
   }
