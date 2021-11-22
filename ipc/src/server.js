@@ -5,7 +5,7 @@ const { Server } = require('ws');
 class IPCServer {
   #server;
 
-  constructor(opts = { port: 8080 }) {
+  constructor(opts = { port: process.env.PORT || 8081 }) {
     const { port } = opts;
     this.clients = new Map();
     this.#server = new Server({ port });

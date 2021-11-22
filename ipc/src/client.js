@@ -29,6 +29,10 @@ class IPCClient extends EventEmitter {
     const scope = data.scope;
     this.emit(scope, data.data);
   }
+
+  close() {
+    this.#socket.close();
+  }
 }
 
 module.exports = IPCClient;
