@@ -18,7 +18,16 @@ yargs(hideBin(process.argv))
       command: {
         alias: 'c',
         demand: true,
-        choices: ['activate-workspace'],
+        choices: [
+          "activate-workspace",
+          "change-horizontal",
+          "change-vertical",
+          "add-workspace",
+          "toggle-split",
+          "toggle-float",
+          "exec",
+          "flip",
+        ],
       },
       args: {
         alias: 'a',

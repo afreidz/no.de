@@ -34,6 +34,16 @@ class Manager extends Logger {
           }
           break;
         case 'command':
+          switch (data.command) {
+            case 'activate-workspace': this.activateWorkspace(...data.args); break;
+            case 'change-horizontal': this.changeHorizontal(...data.args); break;
+            case 'change-vertical': this.changeVertical(...data.args); break;
+            case 'add-workspace': this.addWorkspace(...data.args); break;
+            case 'toggle-split': this.split = !this.split; break;
+            case 'toggle-float': this.toggleFloat(); break;
+            case 'exec': this.exec(...data.args); break;
+            case 'flip': this.flip(); break;
+          }
           if (data.command === 'activate-workspace') {
             this.activateWorkspace(data.args[0]);
           }
@@ -82,7 +92,7 @@ class Manager extends Logger {
     return this;
   }
 
-  addWorkspace(screen = 0) {
+  addWorkspace(screen = 0, title) {
     const sdims = this.screens[screen];
     const geo = {
       y: sdims.y + 40,
@@ -90,7 +100,7 @@ class Manager extends Logger {
       x: sdims.x + 5,
       w: sdims.w - 10,
     };
-    const ws = new Workspace(geo, screen);
+    const ws = new Workspace(geo, screen, title);
     new Wrapper({ parent: ws.id });
     new Float({ parent: ws.id });
     this.workspaces.push(ws);
