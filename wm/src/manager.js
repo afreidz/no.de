@@ -12,16 +12,16 @@ const { Workspace } = require('./workspace.js');
 const Logger = require('no.de-logger/logger.cjs');
 
 class Manager extends Logger {
-  constructor(opts = { dbug: false }) {
+  constructor(opts = { dbug: false, id: +new Date }) {
     super('Window Manager');
 
     this.drag = null;
     this.split = false;
-    this.id = +new Date;
     this.desktop = null;
     this.mouse = [0, 0];
     this.workspaces = [];
     this.debug = opts.debug;
+    this.id = opts.id || +new Date;
     this.ipc = new IPCClient(['wm']);
 
     this.ipc.on('wm', data => {
@@ -86,10 +86,8 @@ class Manager extends Logger {
     ioHook.on('mouseclick', e => this.raiseCurrent());
     ioHook.start();
 
-
-    this.listen();
-    exec(`${join(__dirname, '../../ui/bin/', 'desktop.cjs')} ${this.id}`);
-    await this.ipc.send('wm', { message: 'initialized' });
+    await this.listen();
+    await this.ipc.send('wm', { msg: 'initialized' });
     return this;
   }
 

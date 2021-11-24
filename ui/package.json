@@ -1,4 +1,5 @@
 {
+  "name": "no.de-ui",
   "scripts": {
     "start": "npm run dev",
     "dev": "svelte-kit dev -p $PORT",
@@ -17,6 +18,7 @@
   },
   "type": "module",
   "dependencies": {
-    "node-gtk": "^0.10.0"
+    "node-gtk": "^0.10.0",
+    "yargs": "^17.2.1"
   }
 }

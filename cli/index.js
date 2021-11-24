@@ -7,6 +7,10 @@ const { hideBin } = require('yargs/helpers');
 const IPCClient = require('no.de-ipc/client');
 const { start, stop, disconnect } = require('./src/pm2.js');
 
+const uiurls = {
+  desktop: 'http://localhost:7000/desktop',
+};
+
 yargs(hideBin(process.argv))
   .command('init', 'start supporting procs', init)
   .command('kill', 'kill running support procs', stopAll)
@@ -62,32 +66,47 @@ async function stopAll() {
   await stop('no.de-wm');
   await stop('no.de-ipc');
   await stop('no.de-hkd');
+  await stop('no.de-desktop');
 }
 
 async function init() {
+  const wmid = +new Date;
+
   await start({
     name: 'no.de-ui',
     script: 'npm start',
     env: { PORT: 7000 },
     cwd: join(__dirname, '../ui'),
   });
+
   await start({
     name: 'no.de-ipc',
     script: 'npm start',
     env: { PORT: 7001 },
     cwd: join(__dirname, '../ipc'),
   });
+
+  await start({
+    name: 'no.de-wm',
+    autorestart: false,
+    script: `startx ${join(__dirname, '../wm', 'index.js')} --id=${wmid} -- :2`,
+  });
+
+  await new Promise(r => setTimeout(r, 1000));
+
   await start({
     name: 'no.de-hkd',
     env: { DISPLAY: ':2' },
     cwd: join(__dirname, '../'),
     script: `/usr/bin/sxhkd -c sxhkdrc`,
   });
+
   await start({
-    name: 'no.de-wm',
+    autorestart: false,
+    name: 'no.de-desktop',
     env: { DISPLAY: ':2' },
-    script: 'startx /home/afreidz/Code/no.de/wm/index.js',
-    cwd: join(__dirname, '../wm'),
+    cwd: join(__dirname, '../ui/bin'),
+    script: `./webview.cjs --title desktop_${wmid} --url ${uiurls['desktop']}`
   });
 }
 
