@@ -27,7 +27,7 @@ async function start(opts = {}) {
 async function stop(name) {
   await connect();
   return new Promise(r => {
-    pm2.stop(name, (err, apps) => {
+    pm2.delete(name, (err, apps) => {
       if (err) return disconnect();
       r(apps);
       disconnect();
