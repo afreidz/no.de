@@ -1,4 +1,5 @@
 import EventEmitter from 'events';
+import WebSocket from 'isomorphic-ws';
 
 export default class IPCClient extends EventEmitter {
   #socket;
@@ -6,11 +7,14 @@ export default class IPCClient extends EventEmitter {
   constructor(scopes = []) {
     super();
     this.scopes = scopes;
-    this.#socket = new WebSocket(`ws://localhost:8080/${scopes.join('/')}`);
-    this.ready = new Promise(r => this.#socket.addEventListener('open', r));
-    this.#socket.addEventListener('message', m => this.handle(m));
+    this.#socket = new WebSocket(`ws://localhost:7001/${scopes.join('/')}`);
+    this.ready = new Promise(r => (this.#socket.onopen = r));
+    this.#socket.onmessage = e => this.handle(e);
     this.on('ipc', data => {
-      if (data.msg === 'connected') this.id = data.id;
+      if (data.msg === 'connected') {
+        this.id = data.id;
+        this.scopes = data.scopes;
+      }
     });
   }
 

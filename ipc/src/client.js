@@ -1,5 +1,4 @@
-const Socket = require('ws');
-const { sep } = require('path');
+const WebSocket = require('isomorphic-ws');
 const { EventEmitter } = require('events');
 
 class IPCClient extends EventEmitter {
@@ -8,9 +7,9 @@ class IPCClient extends EventEmitter {
   constructor(scopes = []) {
     super();
     this.scopes = scopes;
-    this.#socket = new Socket(`ws://localhost:8080${sep}${scopes.join(sep)}`);
-    this.ready = new Promise(r => this.#socket.on('open', r));
-    this.#socket.on('message', m => this.handle(m));
+    this.#socket = new WebSocket(`ws://localhost:${7001}/${scopes.join('/')}`);
+    this.ready = new Promise(r => (this.#socket.onopen = r));
+    this.#socket.onmessage = e => this.handle(e);
     this.on('ipc', data => {
       if (data.msg === 'connected') {
         this.id = data.id;
@@ -24,8 +23,8 @@ class IPCClient extends EventEmitter {
     this.#socket.send(JSON.stringify({ scope, data }));
   }
 
-  handle(str) {
-    const data = JSON.parse(str);
+  handle(e) {
+    const data = JSON.parse(e.data);
     const scope = data.scope;
     this.emit(scope, data.data);
   }

@@ -2,3 +2,4 @@ node_modules
 build
 __wm
 *.log
+sxhkdrc

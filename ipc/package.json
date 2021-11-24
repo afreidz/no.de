@@ -11,6 +11,7 @@
     "start": "node ."
   },
   "dependencies": {
-    "events": "^3.3.0"
+    "events": "^3.3.0",
+    "isomorphic-ws": "^4.0.1"
   }
 }
