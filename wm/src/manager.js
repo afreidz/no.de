@@ -19,9 +19,9 @@ class Manager extends Logger {
     this.split = false;
     this.id = +new Date;
     this.desktop = null;
+    this.mouse = [0, 0];
     this.workspaces = [];
     this.debug = opts.debug;
-    this.mouse = { x: 0, y: 0 };
     this.ipc = new IPCClient(['wm']);
 
     this.ipc.on('wm', data => {

@@ -1,6 +1,7 @@
 const config = {
   kit: {
-    target: '#app'
+    target: '#app',
+    ssr: false,
   }
 };
 
