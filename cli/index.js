@@ -30,6 +30,7 @@ yargs(hideBin(process.argv))
           "toggle-float",
           "exec",
           "flip",
+          "kill",
         ],
       },
       args: {

@@ -43,6 +43,7 @@ class Manager extends Logger {
             case 'toggle-float': this.toggleFloat(); break;
             case 'exec': this.exec(...data.args); break;
             case 'flip': this.flip(); break;
+            case 'kill': this.kill(); break;
           }
           if (data.command === 'activate-workspace') {
             this.activateWorkspace(data.args[0]);
