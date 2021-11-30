@@ -1,4 +1,5 @@
 const x11 = require('x11');
+const { get_property } = require('x11-prop');
 const {
   KeyPress,
   EnterWindow,
@@ -31,6 +32,27 @@ class X11 {
     this.display = await display;
     this.client = this.display.client;
     return this;
+  }
+
+  getAtom(atom) {
+    return new Promise(r => {
+      this.client.InternAtom(false, atom, (err, a) => {
+        if (err) return r('');
+        r(a);
+      });
+    });
+  }
+
+  getProp(wid, prop) {
+    return new Promise(r => {
+      get_property(this.client, wid, prop, null, (err, p) => {
+        if (err) return r('');
+        const val = Array.isArray(p)
+          ? p.map(e => e.toString())
+          : p;
+        r(val);
+      });
+    });
   }
 
   static eventMasks = {

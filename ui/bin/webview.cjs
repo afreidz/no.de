@@ -24,6 +24,7 @@ const rgba = new gdk.RGBA({ red: 0, green: 0, blue: 0, alpha: 0 });
 const web = new webkit.WebView();
 web.loadUri(url);
 web.setBackgroundColor(rgba);
+web.overrideBackgroundColor(0, rgba);
 
 win.setVisual(visual);
 win.add(web);

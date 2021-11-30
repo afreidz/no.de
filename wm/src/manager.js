@@ -9,18 +9,17 @@ const updateLayout = require('./layout.js');
 const getScreenInfo = require('./screen.js');
 const IPCClient = require('no.de-ipc/client');
 const { Workspace } = require('./workspace.js');
-const Logger = require('no.de-logger/logger.cjs');
 
-class Manager extends Logger {
+class Manager {
   constructor(opts = { dbug: false, id: +new Date }) {
-    super('Window Manager');
-
     this.drag = null;
+    this.menu = null;
     this.split = false;
     this.desktop = null;
     this.mouse = [0, 0];
     this.workspaces = [];
     this.debug = opts.debug;
+    this.menuActive = false;
     this.id = opts.id || +new Date;
     this.ipc = new IPCClient(['wm']);
 
@@ -41,6 +40,7 @@ class Manager extends Logger {
             case 'add-workspace': this.addWorkspace(...data.args); break;
             case 'toggle-split': this.split = !this.split; break;
             case 'toggle-float': this.toggleFloat(); break;
+            case 'toggle-menu': this.toggleMenu(); break;
             case 'exec': this.exec(...data.args); break;
             case 'flip': this.flip(); break;
             case 'kill': this.kill(); break;
@@ -55,10 +55,6 @@ class Manager extends Logger {
     return this.init();
   }
 
-  get desktopId() {
-    return `desktop_${this.id}`;
-  }
-
   async init() {
     const x11 = await (new X11());
     const { client, display } = x11;
@@ -70,9 +66,9 @@ class Manager extends Logger {
     this.xscreen = display.screen[0];
 
     if (!this.debug) {
-      this.emit('info', `Initializing Window Manager...`);
-      client.ChangeWindowAttributes(this.xscreen.root, X11.eventMasks.manager, e => this.emit('error', e.message));
-      this.emit('info', `${this.xscreen.root} is now the window manager`);
+      console.log('info', `Initializing Window Manager...`);
+      client.ChangeWindowAttributes(this.xscreen.root, X11.eventMasks.manager, e => console.log('error', e.message));
+      console.log('info', `${this.xscreen.root} is now the window manager`);
     }
 
     ioHook.on('mousedrag', e => {
@@ -139,7 +135,7 @@ class Manager extends Logger {
   }
 
   kill() {
-    if (!this.focusedWindow) return;
+    if (!this.focusedWindow || this.focusedWindow.id === this.menu) return;
     this.client.DestroyWindow(this.focusedWindow.id);
   }
 
@@ -225,13 +221,25 @@ class Manager extends Logger {
     this.ipc.send('wm', { message: 'layout-flip', workspaces: this.workspaces.map(ws => ws.serialize()) });
   }
 
+  toggleMenu() {
+    if (!this.menu) return;
+    if (this.menuActive) {
+      this.client.UnmapWindow(this.menu);
+      this.menuActive = false;
+    } else {
+      this.client.MapWindow(this.menu);
+      this.client.RaiseWindow(this.menu);
+      this.menuActive = true;
+    }
+  }
+
   getWinName(wid) {
     const { WM_NAME, STRING } = this.client.atoms;
     return new Promise(r => {
       this.client.GetProperty(0, wid, WM_NAME, STRING, 0, 10000000, (err, prop) => {
-        if (err) return this.emit('error', err);
-        const name = prop.data.toString();
-        r(name);
+        if (err) return console.error('error', err);
+        const val = prop.data.toString();
+        r(val);
       });
     });
   }
@@ -240,30 +248,32 @@ class Manager extends Logger {
     const { WM_CLASS, STRING } = this.client.atoms;
     return new Promise(r => {
       this.client.GetProperty(0, wid, WM_CLASS, STRING, 0, 10000000, (err, prop) => {
-        if (err) return this.emit('error', err);
-        const hints = prop.data.toString();
-        r(hints);
+        if (err) return console.error('error', err);
+        const val = prop.data.toString();
+        r(val);
       });
     });
   }
 
-  async setDesktop(wid) {
-    if (!!this.desktop) return;
-    const name = await this.getWinName(wid);
-    this.emit('info', `Checking if ${wid}:${name} is desktop`);
-    if (this.desktopId === name) {
-      this.emit('info', `${wid} is now desktop`);
-      this.desktop = wid;
-    }
-  }
-
   async handleMap(wid) {
     const name = await this.getWinName(wid);
-    this.emit('info', `Map Request for ${wid}:${name}`);
+    console.log('info', `Map Request for ${wid}:${name}`);
+    console.log('Special WIDS:', this.menu, this.desktop);
+
+    await this.setType(wid);
+
     if (this.desktop === wid) {
+      console.log(this.xscreen.pixel_width, this.xscreen.pixel_height);
       this.client.MoveWindow(wid, 0, 0);
       this.client.ResizeWindow(wid, this.xscreen.pixel_width, this.xscreen.pixel_height);
       this.client.MapWindow(wid);
+      return;
+    }
+
+    if (this.menu === wid) {
+      this.client.MoveWindow(wid, 0, 0);
+      this.client.ResizeWindow(wid, 500, this.xscreen.pixel_height);
+      if (this.menuActive) this.client.MapWindow(wid);
       return;
     }
 
@@ -291,10 +301,12 @@ class Manager extends Logger {
     }
 
     this.client.MapWindow(wid);
+
+    if (this.menuActive && this.menu) this.client.RaiseWindow(this.menu);
   }
 
   handleDestroy(wid) {
-    this.emit('info', `Destroy Request for ${wid}`);
+    console.log('info', `Destroy Request for ${wid}`);
     const win = Window.getById(wid);
     if (!win) return;
 
@@ -308,13 +320,13 @@ class Manager extends Logger {
   }
 
   handleEnter(wid) {
-    this.emit('info', `Mouse Enter Notify for ${wid}`);
+    console.log('info', `Mouse Enter Notify for ${wid}`);
     this.focusedWindow = Window.getById(wid);
     this.client.SetInputFocus(wid);
   }
 
   handleExit(wid) {
-    this.emit('info', `Mouse Exit Notify for ${wid}`);
+    console.log('info', `Mouse Exit Notify for ${wid}`);
     this.focusedWindow = null;
     this.client.SetInputFocus(this.xscreen.root);
   }
@@ -348,6 +360,18 @@ class Manager extends Logger {
     this.client.RaiseWindow(this.focusedWindow.id);
   }
 
+  async setType(wid) {
+    const name = await this.getWinName(wid);
+
+    if (name.includes(`desktop_${this.id}`)) {
+      this.desktop = wid;
+    }
+
+    if (name.includes(`menu_${this.id}`)) {
+      this.menu = wid;
+    }
+  }
+
   async listen() {
     if (this.debug) return;
     this.client.on('event', async e => {
@@ -355,11 +379,11 @@ class Manager extends Logger {
       if (!wid) return;
 
       switch (name) {
-        case 'CreateNotify': await this.setDesktop(wid); break;
+        case 'CreateNotify': console.log(await this.getWinName(wid)); break;
         case 'DestroyNotify': this.handleDestroy(wid); break;
+        case 'MapRequest': await this.handleMap(wid); break;
         case 'EnterNotify': this.handleEnter(wid); break;
         case 'LeaveNotify': this.handleExit(wid); break;
-        case 'MapRequest': this.handleMap(wid); break;
       }
     });
   }

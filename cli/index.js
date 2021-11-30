@@ -9,11 +9,15 @@ const { start, stop, disconnect } = require('./src/pm2.js');
 
 const uiurls = {
   desktop: 'http://localhost:7000/desktop',
+  menu: 'http://localhost:7000/menu',
 };
+
+const display = 2;
 
 yargs(hideBin(process.argv))
   .command('init', 'start supporting procs', init)
   .command('kill', 'kill running support procs', stopAll)
+  .command('flush', 'flush logs', flush)
   .command('logs', 'display logs', logs)
   .command('ls', 'display logs', list)
   .command({
@@ -32,6 +36,7 @@ yargs(hideBin(process.argv))
           "add-workspace",
           "toggle-split",
           "toggle-float",
+          "toggle-menu",
           "exec",
           "flip",
           "kill",
@@ -47,15 +52,32 @@ yargs(hideBin(process.argv))
   .help('h')
   .parse();
 
-function logs() {
-  const log = spawn('npx', ['pm2', 'logs'], {
+function flush() {
+  const names = [
+    "no.de-ui",
+    "no.de-wm",
+    "no.de-ipc",
+    "no.de-hkd",
+    "no.de-menu",
+    "no.de-desktop",
+    "no.de-compositor",
+  ];
+
+  spawn('npx', ['pm2', 'flush', ...names], {
+    stdio: 'inherit',
+    cwd: join(__dirname, '../')
+  });
+}
+
+function logs(e) {
+  spawn('npx', ['pm2', ...e.argv._], {
     stdio: 'inherit',
     cwd: join(__dirname, '../'),
   });
 }
 
 function list() {
-  const list = spawn('npx', ['pm2', 'ls'], {
+  spawn('npx', ['pm2', 'ls'], {
     stdio: 'inherit',
     cwd: join(__dirname, '../')
   });
@@ -66,7 +88,9 @@ async function stopAll() {
   await stop('no.de-wm');
   await stop('no.de-ipc');
   await stop('no.de-hkd');
+  await stop('no.de-menu');
   await stop('no.de-desktop');
+  await stop('no.de-compositor');
 }
 
 async function init() {
@@ -89,24 +113,43 @@ async function init() {
   await start({
     name: 'no.de-wm',
     autorestart: false,
-    script: `startx ${join(__dirname, '../wm', 'index.js')} --id=${wmid} -- :2`,
+    script: `startx ${join(__dirname, '../wm', 'index.js')} --id=${wmid} -- :${display}`,
   });
 
   await new Promise(r => setTimeout(r, 1000));
 
   await start({
+    name: 'no.de-compositor',
+    cwd: join(__dirname, '../'),
+    env: { DISPLAY: `:${display}` },
+    script: 'picom --config ./picom --experimental-backends',
+  });
+
+  await start({
     name: 'no.de-hkd',
-    env: { DISPLAY: ':2' },
+    env: { DISPLAY: `:${display}` },
     cwd: join(__dirname, '../'),
     script: `/usr/bin/sxhkd -c sxhkdrc`,
   });
 
+  await new Promise(r => setTimeout(r, 500));
+
   await start({
     autorestart: false,
     name: 'no.de-desktop',
-    env: { DISPLAY: ':2' },
+    env: { DISPLAY: `:${display}` },
     cwd: join(__dirname, '../ui/bin'),
-    script: `./webview.cjs --title desktop_${wmid} --url ${uiurls['desktop']}`
+    script: `./webview.cjs --title desktop_${wmid} --type "DESKTOP" --url ${uiurls['desktop']}`
+  });
+
+  await new Promise(r => setTimeout(r, 2000));
+
+  await start({
+    autorestart: false,
+    name: 'no.de-menu',
+    env: { DISPLAY: `:${display}` },
+    cwd: join(__dirname, '../ui/bin'),
+    script: `./webview.cjs --title menu_${wmid} --type "DROPDOWN_MENU" --url ${uiurls['menu']}`
   });
 }
 
