@@ -9,7 +9,7 @@ const { start, stop, disconnect } = require('./src/pm2.js');
 
 const uiurls = {
   desktop: 'http://localhost:7000/desktop',
-  menu: 'http://localhost:7000/menu',
+  brain: 'http://localhost:7000/brain',
 };
 
 const display = 2;
@@ -36,7 +36,7 @@ yargs(hideBin(process.argv))
           "add-workspace",
           "toggle-split",
           "toggle-float",
-          "toggle-menu",
+          "toggle-brain",
           "exec",
           "flip",
           "kill",
@@ -58,7 +58,7 @@ function flush() {
     "no.de-wm",
     "no.de-ipc",
     "no.de-hkd",
-    "no.de-menu",
+    "no.de-brain",
     "no.de-desktop",
     "no.de-compositor",
   ];
@@ -88,7 +88,7 @@ async function stopAll() {
   await stop('no.de-wm');
   await stop('no.de-ipc');
   await stop('no.de-hkd');
-  await stop('no.de-menu');
+  await stop('no.de-brain');
   await stop('no.de-desktop');
   await stop('no.de-compositor');
 }
@@ -146,17 +146,16 @@ async function init() {
 
   await start({
     autorestart: false,
-    name: 'no.de-menu',
+    name: 'no.de-brain',
     env: { DISPLAY: `:${display}` },
     cwd: join(__dirname, '../ui/bin'),
-    script: `./webview.cjs --title menu_${wmid} --type "DROPDOWN_MENU" --url ${uiurls['menu']}`
+    script: `./webview.cjs --title brain_${wmid} --url ${uiurls['brain']}`
   });
 }
 
 async function handleWMCMD(cmd) {
   const client = new IPCClient(['wm']);
   const { command, args } = cmd;
-
   client.send('wm', { msg: 'command', command, args });
 
   await new Promise(r => setTimeout(r, 1000));

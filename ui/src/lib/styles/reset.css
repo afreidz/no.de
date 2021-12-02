@@ -1,5 +1,5 @@
 /*** The new CSS Reset - version 1.2.0 (last updated 23.7.2021) ***/
-*:where(:not(iframe, canvas, img, svg, video):not(svg *)) {
+*:where(:not(input, iframe, canvas, img, svg, video):not(svg *)) {
   all: unset;
   display: revert;
 }
@@ -24,4 +24,13 @@ table {
 
 textarea {
   white-space: revert;
+}
+
+input {
+  width: auto;
+  border: none;
+  outline: none;
+  color: inherit;
+  background: none;
+  font-family: inherit;
 }

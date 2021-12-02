@@ -9,15 +9,21 @@
   },
   "devDependencies": {
     "@sveltejs/kit": "next",
+    "copy-text-to-clipboard": "^3.0.1",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-svelte3": "^3.2.1",
     "prettier": "^2.4.1",
     "prettier-plugin-svelte": "^2.4.0",
-    "svelte": "^3.42.6"
+    "sass": "^1.44.0",
+    "svelte": "^3.42.6",
+    "svelte-preprocess": "^4.9.8"
   },
   "type": "module",
   "dependencies": {
+    "fuse.js": "^6.4.6",
+    "ini": "^2.0.0",
+    "mathjs": "^10.0.0",
     "node-gtk": "^0.10.0",
     "yargs": "^17.2.1"
   }

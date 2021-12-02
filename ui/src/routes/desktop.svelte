@@ -7,11 +7,13 @@ const bg = 'url(https://via.placeholder.com/1920x1080/7f39fb/ffffff?text=1) top 
   <Bar/>
 </main>
 
-<style>
-  @import '$lib/styles';
+<style lang="scss">
+  @use "sass:map";
+  @use "$lib/styles" as *;
+  @import "$lib/styles/base.css";
 
   main {
-    flex: 1;
+    height: 100%;
     display: grid;
     grid-template-rows: 3.5rem auto;
   }

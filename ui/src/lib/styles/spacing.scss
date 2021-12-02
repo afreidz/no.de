@@ -1,0 +1,9 @@
+@use "sass:map";
+@use "./theme" as theme;
+
+$rem: map.get(theme.$theme, "rem");
+
+$spacing: (
+  1: $rem,
+  2: $rem * 1.1,
+);

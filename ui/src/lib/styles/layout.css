@@ -1,8 +1,0 @@
-html, body {
-  flex: 1;
-  display: flex;
-  min-height: 100%;
-  align-items: stretch;
-  justify-content: stretch;
-  background: rgba(0,0,0,0);
-}

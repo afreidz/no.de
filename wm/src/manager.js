@@ -13,13 +13,13 @@ const { Workspace } = require('./workspace.js');
 class Manager {
   constructor(opts = { dbug: false, id: +new Date }) {
     this.drag = null;
-    this.menu = null;
+    this.brain = null;
     this.split = false;
     this.desktop = null;
     this.mouse = [0, 0];
     this.workspaces = [];
     this.debug = opts.debug;
-    this.menuActive = false;
+    this.brainActive = false;
     this.id = opts.id || +new Date;
     this.ipc = new IPCClient(['wm']);
 
@@ -37,10 +37,15 @@ class Manager {
             case 'activate-workspace': this.activateWorkspace(...data.args); break;
             case 'change-horizontal': this.changeHorizontal(...data.args); break;
             case 'change-vertical': this.changeVertical(...data.args); break;
+            case 'toggle-brain':
+              const arg = data.args?.[0]
+                ? (data.args[0] == 'true')
+                : null;
+              this.toggleBrain(arg);
+              break;
             case 'add-workspace': this.addWorkspace(...data.args); break;
             case 'toggle-split': this.split = !this.split; break;
             case 'toggle-float': this.toggleFloat(); break;
-            case 'toggle-menu': this.toggleMenu(); break;
             case 'exec': this.exec(...data.args); break;
             case 'flip': this.flip(); break;
             case 'kill': this.kill(); break;
@@ -135,7 +140,7 @@ class Manager {
   }
 
   kill() {
-    if (!this.focusedWindow || this.focusedWindow.id === this.menu) return;
+    if (!this.focusedWindow || this.focusedWindow.id === this.brain) return;
     this.client.DestroyWindow(this.focusedWindow.id);
   }
 
@@ -221,15 +226,21 @@ class Manager {
     this.ipc.send('wm', { message: 'layout-flip', workspaces: this.workspaces.map(ws => ws.serialize()) });
   }
 
-  toggleMenu() {
-    if (!this.menu) return;
-    if (this.menuActive) {
-      this.client.UnmapWindow(this.menu);
-      this.menuActive = false;
-    } else {
-      this.client.MapWindow(this.menu);
-      this.client.RaiseWindow(this.menu);
-      this.menuActive = true;
+  toggleBrain(forceOpen = null) {
+    console.log('Brain forceOpen', forceOpen);
+    if (!this.brain) return;
+    if ((forceOpen === null && this.brainActive) || forceOpen === false) {
+      this.client.UnmapWindow(this.brain);
+      this.brainActive = false;
+    } else if (forceOpen === true || (forceOpen === null && !this.brainActive)) {
+      const ws = this.getWorkspaceByCoords(...this.mouse);
+      const screen = this.screens[ws.screen];
+      this.client.MoveWindow(this.brain, screen.x, screen.y);
+      this.client.ResizeWindow(this.brain, screen.w, screen.h);
+      this.client.MapWindow(this.brain);
+      this.client.RaiseWindow(this.brain);
+      this.client.SetInputFocus(this.brain);
+      this.brainActive = true;
     }
   }
 
@@ -258,9 +269,8 @@ class Manager {
   async handleMap(wid) {
     const name = await this.getWinName(wid);
     console.log('info', `Map Request for ${wid}:${name}`);
-    console.log('Special WIDS:', this.menu, this.desktop);
-
     await this.setType(wid);
+    console.log('Special WIDS:', this.brain, this.desktop);
 
     if (this.desktop === wid) {
       console.log(this.xscreen.pixel_width, this.xscreen.pixel_height);
@@ -270,15 +280,10 @@ class Manager {
       return;
     }
 
-    if (this.menu === wid) {
-      this.client.MoveWindow(wid, 0, 0);
-      this.client.ResizeWindow(wid, 500, this.xscreen.pixel_height);
-      if (this.menuActive) this.client.MapWindow(wid);
-      return;
-    }
-
-    if (!!Window.getById(wid)) return;
     this.client.ChangeWindowAttributes(wid, X11.eventMasks.window);
+
+    if (this.brain === wid) return;
+    if (!!Window.getById(wid)) return;
 
     let ws = Workspace.getById(this.focusedWindow?.root);
 
@@ -302,7 +307,7 @@ class Manager {
 
     this.client.MapWindow(wid);
 
-    if (this.menuActive && this.menu) this.client.RaiseWindow(this.menu);
+    if (this.brainActive && this.brain) this.client.RaiseWindow(this.brain);
   }
 
   handleDestroy(wid) {
@@ -367,8 +372,8 @@ class Manager {
       this.desktop = wid;
     }
 
-    if (name.includes(`menu_${this.id}`)) {
-      this.menu = wid;
+    if (name.includes(`brain_${this.id}`)) {
+      this.brain = wid;
     }
   }
 
@@ -379,7 +384,6 @@ class Manager {
       if (!wid) return;
 
       switch (name) {
-        case 'CreateNotify': console.log(await this.getWinName(wid)); break;
         case 'DestroyNotify': this.handleDestroy(wid); break;
         case 'MapRequest': await this.handleMap(wid); break;
         case 'EnterNotify': this.handleEnter(wid); break;
