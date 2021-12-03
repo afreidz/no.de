@@ -32,6 +32,7 @@ yargs(hideBin(process.argv))
         choices: [
           "activate-workspace",
           "change-horizontal",
+          "cycle-workspace",
           "change-vertical",
           "add-workspace",
           "toggle-split",

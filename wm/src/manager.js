@@ -25,35 +25,39 @@ class Manager {
 
     this.ipc.on('wm', data => {
       // console.log(data);
-
-      switch (data.msg) {
-        case 'query':
-          if (data.type === 'workspaces') {
-            this.ipc.send('wm', { message: 'workspaces', workspaces: this.workspaces.map(ws => ws.serialize()) });
-          }
-          break;
-        case 'command':
-          switch (data.command) {
-            case 'activate-workspace': this.activateWorkspace(...data.args); break;
-            case 'change-horizontal': this.changeHorizontal(...data.args); break;
-            case 'change-vertical': this.changeVertical(...data.args); break;
-            case 'toggle-brain':
-              const arg = data.args?.[0]
-                ? (data.args[0] == 'true')
-                : null;
-              this.toggleBrain(arg);
-              break;
-            case 'add-workspace': this.addWorkspace(...data.args); break;
-            case 'toggle-split': this.split = !this.split; break;
-            case 'toggle-float': this.toggleFloat(); break;
-            case 'exec': this.exec(...data.args); break;
-            case 'flip': this.flip(); break;
-            case 'kill': this.kill(); break;
-          }
-          if (data.command === 'activate-workspace') {
-            this.activateWorkspace(data.args[0]);
-          }
-          break;
+      try {
+        switch (data.msg) {
+          case 'query':
+            if (data.type === 'workspaces') {
+              this.ipc.send('wm', { message: 'workspaces', workspaces: this.workspaces.map(ws => ws.serialize()) });
+            }
+            break;
+          case 'command':
+            switch (data.command) {
+              case 'activate-workspace': this.activateWorkspace(...data.args); break;
+              case 'change-horizontal': this.changeHorizontal(...data.args); break;
+              case 'change-vertical': this.changeVertical(...data.args); break;
+              case 'toggle-brain':
+                const arg = data.args?.[0]
+                  ? (data.args[0] == 'true')
+                  : null;
+                this.toggleBrain(arg);
+                break;
+              case 'add-workspace': this.addWorkspace(...data.args); break;
+              case 'cycle-workspace': this.cycleWorkspace(); break;
+              case 'toggle-split': this.split = !this.split; break;
+              case 'toggle-float': this.toggleFloat(); break;
+              case 'exec': this.exec(...data.args); break;
+              case 'flip': this.flip(); break;
+              case 'kill': this.kill(); break;
+            }
+            if (data.command === 'activate-workspace') {
+              this.activateWorkspace(data.args[0]);
+            }
+            break;
+        }
+      } catch (err) {
+        console.log(err);
       }
     });
 
@@ -115,6 +119,16 @@ class Manager {
     this.layout(ws.id);
     others.forEach(ws => this.layout(ws.id));
     this.ipc.send('wm', { message: 'workspace-activated', workspaces: this.workspaces.map(ws => ws.serialize()) });
+  }
+
+  cycleWorkspace() {
+    const ws = this.getWorkspaceByCoords(...this.mouse);
+    const screenws = Workspace.getByScreen(ws.screen);
+    const ci = screenws.indexOf(ws);
+    const n = ci + 1 >= screenws.length ? 0 : ci + 1;
+    const nextws = screenws[n];
+    const ni = this.workspaces.indexOf(nextws);
+    return this.activateWorkspace(ni);
   }
 
   toggleFloat(wid) {
