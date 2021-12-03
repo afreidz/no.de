@@ -14,5 +14,5 @@ const { argv } = yargs(hideBin(process.argv));
   manager.addWorkspace(1);
   manager.addWorkspace(1);
   manager.activateWorkspace(0);
-  manager.activateWorkspace(1);
+  manager.activateWorkspace(3);
 })();

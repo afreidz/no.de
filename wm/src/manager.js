@@ -3,7 +3,7 @@ const ioHook = require('iohook');
 const { join } = require('path');
 const Float = require('./float.js');
 const Window = require('./window.js');
-const Wrapper = require('./splitter.js');
+const Wrapper = require('./wrapper.js');
 const { exec } = require('child_process');
 const updateLayout = require('./layout.js');
 const getScreenInfo = require('./screen.js');
@@ -18,6 +18,7 @@ class Manager {
     this.desktop = null;
     this.mouse = [0, 0];
     this.workspaces = [];
+    this.specialWids = [];
     this.debug = opts.debug;
     this.brainActive = false;
     this.id = opts.id || +new Date;
@@ -37,6 +38,7 @@ class Manager {
               case 'activate-workspace': this.activateWorkspace(...data.args); break;
               case 'change-horizontal': this.changeHorizontal(...data.args); break;
               case 'change-vertical': this.changeVertical(...data.args); break;
+              case 'moveto-workspace': this.moveCurrentToWS(data.args); break;
               case 'toggle-brain':
                 const arg = data.args?.[0]
                   ? (data.args[0] == 'true')
@@ -132,21 +134,24 @@ class Manager {
   }
 
   toggleFloat(wid) {
-    const win = !!wid
-      ? Window.getById(wid)
-      : (this.focusedWindow
-        || Window.getByCoords(...this.mouse));
+    try {
+      if (this.specialWids.includes(wid)) return;
+      const win = !!wid
+        ? Window.getById(wid)
+        : (this.focusedWindow
+          || Window.getByCoords(...this.mouse));
 
-    if (!win) return;
+      if (!win) return;
 
-    win.floating = !win.floating;
-    this.layout(win.root);
+      win.floating = !win.floating;
+      this.layout(win.root);
 
-    if (win.floating) {
-      this.client.RaiseWindow(win.id);
-      this.client.MoveWindow(win.id, win.x, win.y);
-      this.client.ResizeWindow(win.id, win.w, win.h);
-    }
+      if (win.floating) {
+        this.client.RaiseWindow(win.id);
+        this.client.MoveWindow(win.id, win.x, win.y);
+        this.client.ResizeWindow(win.id, win.w, win.h);
+      }
+    } catch (err) { console.log(err); }
   }
 
   exec(cmd) {
@@ -154,36 +159,41 @@ class Manager {
   }
 
   kill() {
-    if (!this.focusedWindow || this.focusedWindow.id === this.brain) return;
-    this.client.DestroyWindow(this.focusedWindow.id);
+    try {
+      if (this.specialWids.includes(this.focusedWindow.id) || !this.focusedWindow) return;
+      this.client.DestroyWindow(this.focusedWindow.id);
+    } catch (err) { console.log(err); }
   }
 
   layout(ws) {
-    updateLayout(ws);
+    try {
+      updateLayout(ws);
 
-    const workspace = Workspace.getById(ws);
-    const windows = workspace.descendents.filter(d => !!(Window.getById(d) instanceof Window));
-    const floaters = workspace.floatContainer.children;
+      const workspace = Workspace.getById(ws);
+      const windows = workspace.descendents.filter(d => !!(Window.getById(d) instanceof Window));
+      const floaters = workspace.floatContainer.children;
 
-    [...windows, ...floaters].forEach(w => {
-      const win = Window.getById(w);
-      if (!workspace.active) {
-        this.client.UnmapWindow(win.id);
-        win.mapped = false;
-      } else {
-        if (!win.floating) {
-          this.client.MoveWindow(win.id, win.geo.x, win.geo.y);
-          this.client.ResizeWindow(win.id, win.geo.w, win.geo.h);
+      [...windows, ...floaters].forEach(w => {
+        const win = Window.getById(w);
+        if (!workspace.active) {
+          this.client.UnmapWindow(win.id);
+          win.mapped = false;
+        } else {
+          if (!win.floating) {
+            this.client.MoveWindow(win.id, win.geo.x, win.geo.y);
+            this.client.ResizeWindow(win.id, win.geo.w, win.geo.h);
+          }
+          if (!win.mapped) {
+            win.mapped = true;
+            this.client.MapWindow(win.id);
+          }
         }
-        if (!win.mapped) {
-          win.mapped = true;
-          this.client.MapWindow(win.id);
-        }
-      }
-    });
+      });
+    } catch (err) { console.log(err); }
   }
 
   changeVertical(px = 1) {
+    if (this.specialWids.includes(this.focusedWindow?.id)) return;
     const ws = this.focusedWindow
       ? Workspace.getById(this.focusedWindow.root)
       : this.getWorkspaceByCoords(...this.mouse);
@@ -209,9 +219,14 @@ class Manager {
   }
 
   changeHorizontal(px = 1) {
+    if (this.specialWids.includes(this.focusedWindow?.id)) return;
+    const ws = this.focusedWindow
+      ? Workspace.getById(this.focusedWindow.root)
+      : this.getWorkspaceByCoords(...this.mouse);
+
     const wrap = this.focusedWindow
       ? Wrapper.getById(this.focusedWindow.parent)
-      : this.getWorkspaceByCoords(...this.mouse);
+      : ws.getWrapperByCoords(...this.mouse);
 
     const win = this.focusedWindow || Window.getByCoords(...this.mouse);
 
@@ -241,21 +256,23 @@ class Manager {
   }
 
   toggleBrain(forceOpen = null) {
-    console.log('Brain forceOpen', forceOpen);
-    if (!this.brain) return;
-    if ((forceOpen === null && this.brainActive) || forceOpen === false) {
-      this.client.UnmapWindow(this.brain);
-      this.brainActive = false;
-    } else if (forceOpen === true || (forceOpen === null && !this.brainActive)) {
-      const ws = this.getWorkspaceByCoords(...this.mouse);
-      const screen = this.screens[ws.screen];
-      this.client.MoveWindow(this.brain, screen.x, screen.y);
-      this.client.ResizeWindow(this.brain, screen.w, screen.h);
-      this.client.MapWindow(this.brain);
-      this.client.RaiseWindow(this.brain);
-      this.client.SetInputFocus(this.brain);
-      this.brainActive = true;
-    }
+    try {
+      console.log('Brain forceOpen', forceOpen);
+      if (!this.brain) return;
+      if ((forceOpen === null && this.brainActive) || forceOpen === false) {
+        this.client.UnmapWindow(this.brain);
+        this.brainActive = false;
+      } else if (forceOpen === true || (forceOpen === null && !this.brainActive)) {
+        const ws = this.getWorkspaceByCoords(...this.mouse);
+        const screen = this.screens[ws.screen];
+        this.client.MoveWindow(this.brain, screen.x, screen.y);
+        this.client.ResizeWindow(this.brain, screen.w, screen.h);
+        this.client.MapWindow(this.brain);
+        this.client.RaiseWindow(this.brain);
+        this.client.SetInputFocus(this.brain);
+        this.brainActive = true;
+      }
+    } catch (err) { console.log(err); }
   }
 
   getWinName(wid) {
@@ -281,50 +298,53 @@ class Manager {
   }
 
   async handleMap(wid) {
-    const name = await this.getWinName(wid);
-    console.log('info', `Map Request for ${wid}:${name}`);
-    await this.setType(wid);
-    console.log('Special WIDS:', this.brain, this.desktop);
+    try {
+      const name = await this.getWinName(wid);
+      console.log('info', `Map Request for ${wid}:${name}`);
+      await this.setType(wid);
+      console.log('Special WIDS:', this.brain, this.desktop);
 
-    if (this.desktop === wid) {
-      console.log(this.xscreen.pixel_width, this.xscreen.pixel_height);
-      this.client.MoveWindow(wid, 0, 0);
-      this.client.ResizeWindow(wid, this.xscreen.pixel_width, this.xscreen.pixel_height);
+      if (this.desktop === wid) {
+        console.log(this.xscreen.pixel_width, this.xscreen.pixel_height);
+        this.client.MoveWindow(wid, 0, 0);
+        this.client.ResizeWindow(wid, this.xscreen.pixel_width, this.xscreen.pixel_height);
+        this.client.MapWindow(wid);
+        return;
+      }
+
+      this.client.ChangeWindowAttributes(wid, X11.eventMasks.window);
+
+      if (this.brain === wid) return;
+      if (!!Window.getById(wid)) return;
+
+      let ws = Workspace.getById(this.focusedWindow?.root);
+
+      if (!ws) ws = this.getWorkspaceByCoords(...this.mouse);
+      if (!ws) ws = this.workspaces[0];
+
+      let wrapper = Wrapper.getById(this.focusedWindow?.parent);
+
+      if (!wrapper) wrapper = ws.getWrapperByCoords(...this.mouse);
+      if (!wrapper) wrapper = Wrapper.getById(ws.children[ws.children.length - 1] || ws.children[0]);
+      if (this.split && wrapper.children.length !== 0) wrapper = new Wrapper({ parent: ws.id });
+
+      const win = new Window({ parent: wrapper.id, id: wid });
+      const wmclass = await this.getWinClass(win.id);
+
+      if (wmclass.toLowerCase().includes('nautilus')) {
+        this.toggleFloat(win.id);
+      } else {
+        this.layout(ws.id);
+      }
+
       this.client.MapWindow(wid);
-      return;
-    }
 
-    this.client.ChangeWindowAttributes(wid, X11.eventMasks.window);
-
-    if (this.brain === wid) return;
-    if (!!Window.getById(wid)) return;
-
-    let ws = Workspace.getById(this.focusedWindow?.root);
-
-    if (!ws) ws = this.getWorkspaceByCoords(...this.mouse);
-    if (!ws) ws = this.workspaces[0];
-
-    let wrapper = Wrapper.getById(this.focusedWindow?.parent);
-
-    if (!wrapper) wrapper = ws.getWrapperByCoords(...this.mouse);
-    if (!wrapper) wrapper = Wrapper.getById(ws.children[ws.children.length - 1] || ws.children[0]);
-    if (this.split && wrapper.children.length !== 0) wrapper = new Wrapper({ parent: ws.id });
-
-    const win = new Window({ parent: wrapper.id, id: wid });
-    const wmclass = await this.getWinClass(win.id);
-
-    if (wmclass.toLowerCase().includes('nautilus')) {
-      this.toggleFloat(win.id);
-    } else {
-      this.layout(ws.id);
-    }
-
-    this.client.MapWindow(wid);
-
-    if (this.brainActive && this.brain) this.client.RaiseWindow(this.brain);
+      if (this.brainActive && this.brain) this.client.RaiseWindow(this.brain);
+    } catch (err) { console.log(err); }
   }
 
   handleDestroy(wid) {
+    if (this.specialWids.includes(wid)) return;
     console.log('info', `Destroy Request for ${wid}`);
     const win = Window.getById(wid);
     if (!win) return;
@@ -333,50 +353,80 @@ class Manager {
     const ws = Workspace.getById(win.root);
     wrap.remove(win);
     win.deref();
-    if (wrap.children.length === 0 && ws.children.length > 1) ws.remove(wrap);
     this.layout(ws.id);
     this.focusedWindow = Window.getByCoords(...this.mouse);
   }
 
   handleEnter(wid) {
-    console.log('info', `Mouse Enter Notify for ${wid}`);
-    this.focusedWindow = Window.getById(wid);
-    this.client.SetInputFocus(wid);
+    try {
+      console.log('info', `Mouse Enter Notify for ${wid}`);
+      this.focusedWindow = Window.getById(wid);
+      this.client.SetInputFocus(wid);
+    } catch (err) { console.log(err); }
   }
 
   handleExit(wid) {
-    console.log('info', `Mouse Exit Notify for ${wid}`);
-    this.focusedWindow = null;
-    this.client.SetInputFocus(this.xscreen.root);
+    try {
+      console.log('info', `Mouse Exit Notify for ${wid}`);
+      this.focusedWindow = null;
+      this.client.SetInputFocus(this.xscreen.root);
+    } catch (err) { console.log(err); }
   }
 
   moveCurrent(x, y) {
+    if (this.specialWids.includes(this.focusedWindow?.id)) return;
     if (!this.focusedWindow?.floating) return;
-    if (!this.drag) this.drag = { x, y };
-    const win = this.focusedWindow;
-    const dx = x - this.drag.x;
-    const dy = y - this.drag.y;
-    this.client.MoveWindow(win.id, (win.x + dx), (win.y + dy));
-    win.x += dx;
-    win.y += dy;
-    this.drag = { x, y };
+    try {
+      if (!this.drag) this.drag = { x, y };
+      const win = this.focusedWindow;
+      const dx = x - this.drag.x;
+      const dy = y - this.drag.y;
+      this.client.MoveWindow(win.id, (win.x + dx), (win.y + dy));
+      win.x += dx;
+      win.y += dy;
+      this.drag = { x, y };
+    } catch (err) { console.log(err); }
   }
 
   resizeCurrent(x, y) {
+    if (this.specialWids.includes(this.focusedWindow?.id)) return;
     if (!this.focusedWindow?.floating) return;
-    if (!this.drag) this.drag = { x, y };
-    const win = this.focusedWindow;
-    const dx = x - this.drag.x;
-    const dy = y - this.drag.y;
-    this.client.ResizeWindow(win.id, (win.w + dx), (win.h + dy));
-    win.w += dx;
-    win.h += dy;
-    this.drag = { x, y };
+    try {
+      if (!this.drag) this.drag = { x, y };
+      const win = this.focusedWindow;
+      const dx = x - this.drag.x;
+      const dy = y - this.drag.y;
+      this.client.ResizeWindow(win.id, (win.w + dx), (win.h + dy));
+      win.w += dx;
+      win.h += dy;
+      this.drag = { x, y };
+    } catch (err) { console.log(err); }
   }
 
   raiseCurrent() {
     if (!this.focusedWindow?.floating) return;
-    this.client.RaiseWindow(this.focusedWindow.id);
+    try {
+      this.client.RaiseWindow(this.focusedWindow.id);
+    } catch (err) { console.log(err); }
+  }
+
+  moveCurrentToWS(n) {
+    if (this.specialWids.includes(this.focusedWindow?.id)) return;
+    if (!this.focusedWindow) return;
+
+    const cws = Workspace.getById(this.focusedWindow.root);
+    const cwrap = Wrapper.getById(this.focusedWindow.parent);
+
+    const nws = this.workspaces[n];
+    const nwrap = Wrapper.getById(nws.children[nws.children.length - 1]);
+
+    if (!nws || !nwrap) return;
+
+    cwrap.remove(this.focusedWindow);
+    nwrap.append(this.focusedWindow);
+
+    this.layout(cws.id);
+    this.layout(nws.id);
   }
 
   async setType(wid) {
@@ -384,10 +434,12 @@ class Manager {
 
     if (name.includes(`desktop_${this.id}`)) {
       this.desktop = wid;
+      this.specialWids.push(wid);
     }
 
     if (name.includes(`brain_${this.id}`)) {
       this.brain = wid;
+      this.specialWids.push(wid);
     }
   }
 

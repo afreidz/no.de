@@ -1,4 +1,3 @@
-const Splitter = require('./splitter.js');
 const updateLayout = require('./layout.js');
 const Container = require('./container.js');
 let count = 1;

@@ -34,6 +34,9 @@ class Splitter extends Container {
     this.ratios.forEach((r, i) => {
       this.ratios[i] = this.ratios[i] - spread;
     });
+
+    const ws = Container.getById(this.parent);
+    if (this.children.length === 0 && ws.children.length > 1) ws.remove(this);
   }
 }
 module.exports = Splitter;
