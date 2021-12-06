@@ -2,8 +2,9 @@ const Container = require('./container.js');
 
 class Window extends Container {
   #floating;
-  constructor(opts = {}) {
-    super(opts);
+  constructor(parent, id) {
+    super(parent, id);
+    this.ratio = 1;
     this.mapped = false;
     this.#floating = false;
     this.parentCache = null;

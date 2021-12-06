@@ -1,42 +1,22 @@
 const Container = require('./container.js');
 const gap = 5;
 
-class Splitter extends Container {
-  constructor(opts = {}) {
-    super({
-      ...opts,
-      decorate: false,
-      dir: opts.parent
-        ? Container.getById(opts.parent).dir === 'ttb'
-          ? 'ltr'
-          : 'ttb'
-        : 'ttb',
-      gaps: [gap, gap, gap, gap],
-    });
-
-    this.ratios = opts.ratios || [];
-  }
-
-  append(c, r = 1) {
-    super.append(c);
-    if (!this.ratios[this.children.indexOf(c.id)]) {
-      this.ratios[this.children.indexOf(c.id)] = r;
-    }
+class Wrapper extends Container {
+  constructor(p, i = null) {
+    const parent = Container.getById(p);
+    super();
+    this.dir = parent
+      ? parent.dir === 'ttb' ? 'ltr' : 'ttb'
+      : 'ttb';
+    this.gaps = [gap, gap, gap, gap];
+    this.ratio = 1;
+    parent?.append(this, i);
   }
 
   remove(c) {
     super.remove(c);
-    this.ratios.splice(this.children.indexOf(c.id), 1);
-
-    const remain = this.ratios.reduce((a, b) => (a + b), 0) - this.children.length;
-    const spread = remain / this.children.length;
-
-    this.ratios.forEach((r, i) => {
-      this.ratios[i] = this.ratios[i] - spread;
-    });
-
     const ws = Container.getById(this.parent);
     if (this.children.length === 0 && ws.children.length > 1) ws.remove(this);
   }
 }
-module.exports = Splitter;
+module.exports = Wrapper;

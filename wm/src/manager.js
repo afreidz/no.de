@@ -37,6 +37,7 @@ class Manager {
             switch (data.command) {
               case 'activate-workspace': this.activateWorkspace(...data.args); break;
               case 'change-horizontal': this.changeHorizontal(...data.args); break;
+              case 'move-within': this.moveCurrentWithinWS(data.args[0]); break;
               case 'change-vertical': this.changeVertical(...data.args); break;
               case 'moveto-workspace': this.moveCurrentToWS(data.args); break;
               case 'toggle-brain':
@@ -107,8 +108,8 @@ class Manager {
       w: sdims.w - 10,
     };
     const ws = new Workspace(geo, screen, title);
-    new Wrapper({ parent: ws.id });
-    new Float({ parent: ws.id });
+    ws.append(new Wrapper());
+    ws.append(new Float());
     this.workspaces.push(ws);
     this.activateWorkspace(this.workspaces.length - 1);
     this.ipc.send('wm', { message: 'workspace-added', workspaces: this.workspaces.map(ws => ws.serialize()) });
@@ -166,14 +167,14 @@ class Manager {
   }
 
   layout(ws) {
-    try {
-      updateLayout(ws);
+    updateLayout(ws);
 
-      const workspace = Workspace.getById(ws);
-      const windows = workspace.descendents.filter(d => !!(Window.getById(d) instanceof Window));
-      const floaters = workspace.floatContainer.children;
+    const workspace = Workspace.getById(ws);
+    const windows = workspace.descendents.filter(d => !!(Window.getById(d) instanceof Window));
+    const floaters = workspace.floatContainer.children;
 
-      [...windows, ...floaters].forEach(w => {
+    [...windows, ...floaters].forEach(w => {
+      try {
         const win = Window.getById(w);
         if (!workspace.active) {
           this.client.UnmapWindow(win.id);
@@ -188,8 +189,8 @@ class Manager {
             this.client.MapWindow(win.id);
           }
         }
-      });
-    } catch (err) { console.log(err); }
+      } catch (err) { console.log(err); }
+    });
   }
 
   changeVertical(px = 1) {
@@ -326,9 +327,9 @@ class Manager {
 
       if (!wrapper) wrapper = ws.getWrapperByCoords(...this.mouse);
       if (!wrapper) wrapper = Wrapper.getById(ws.children[ws.children.length - 1] || ws.children[0]);
-      if (this.split && wrapper.children.length !== 0) wrapper = new Wrapper({ parent: ws.id });
+      if (this.split && wrapper.children.length !== 0) wrapper = new Wrapper(ws.id);
 
-      const win = new Window({ parent: wrapper.id, id: wid });
+      const win = new Window(wrapper.id, wid);
       const wmclass = await this.getWinClass(win.id);
 
       if (wmclass.toLowerCase().includes('nautilus')) {
@@ -429,6 +430,59 @@ class Manager {
     this.layout(nws.id);
   }
 
+  moveCurrentWithinWS(dir = '') {
+    const dirs = ['n', 's', 'e', 'w'];
+    if (!dirs.includes(dir.trim())) return;
+    if (this.specialWids.includes(this.focusedWindow?.id)) return;
+    if (!this.focusedWindow) return;
+
+    const ws = Workspace.getById(this.focusedWindow.root);
+    const cwrap = Wrapper.getById(this.focusedWindow.parent);
+
+    if ((ws.dir === 'ltr' && dir === 'n') || (ws.dir === 'ttb' && dir === 'w')) {
+      const ci = ws.children.indexOf(cwrap.id);
+      const ni = ci - 1 >= 0 ? ci - 1 : null;
+
+      if (ni === null && cwrap.children.length === 1) return;
+
+      const nwrap = ni === null
+        ? new Wrapper(ws.id, 0)
+        : Wrapper.getById(ws.children[ni]);
+      cwrap?.remove(this.focusedWindow);
+      nwrap?.append(this.focusedWindow);
+    } else if ((ws.dir === 'ltr' && dir === 's') || (ws.dir === 'ttb' & dir === 'e')) {
+      const ci = ws.children.indexOf(cwrap.id);
+      const ni = ci + 1 > ws.children.length - 1 ? null : ci + 1;
+
+      if (ni === null && cwrap.children.length === 1) return;
+
+      const nwrap = ni === null
+        ? new Wrapper(ws.id)
+        : Wrapper.getById(ws.children[ni]);
+
+      cwrap?.remove(this.focusedWindow);
+      nwrap?.append(this.focusedWindow);
+    } else if ((ws.dir === 'ltr' && dir === 'e') || (ws.dir === 'ttb' && dir === 's')) {
+      const ci = cwrap.children.indexOf(this.focusedWindow?.id);
+      const ni = ci + 1 > cwrap.children.length - 1 ? null : ci + 1;
+
+      if (ni === null || cwrap.children.length === 1) return;
+
+      cwrap?.remove(this.focusedWindow);
+      cwrap?.append(this.focusedWindow, ni);
+    } else if ((ws.dir === 'ltr' && dir === 'w') || (ws.dir === 'ttb' && dir === 'n')) {
+      const ci = cwrap.children.indexOf(this.focusedWindow?.id);
+      const ni = ci - 1 >= 0 ? ci - 1 : null;
+
+      if (ni === null || cwrap.children.length === 1) return;
+
+      cwrap?.remove(this.focusedWindow);
+      cwrap?.append(this.focusedWindow, ni);
+    }
+
+    this.layout(ws.id);
+  }
+
   async setType(wid) {
     const name = await this.getWinName(wid);
 
@@ -446,15 +500,17 @@ class Manager {
   async listen() {
     if (this.debug) return;
     this.client.on('event', async e => {
-      const { wid, name } = e;
-      if (!wid) return;
+      try {
+        const { wid, name } = e;
+        if (!wid) return;
 
-      switch (name) {
-        case 'DestroyNotify': this.handleDestroy(wid); break;
-        case 'MapRequest': await this.handleMap(wid); break;
-        case 'EnterNotify': this.handleEnter(wid); break;
-        case 'LeaveNotify': this.handleExit(wid); break;
-      }
+        switch (name) {
+          case 'DestroyNotify': this.handleDestroy(wid); break;
+          case 'MapRequest': await this.handleMap(wid); break;
+          case 'EnterNotify': this.handleEnter(wid); break;
+          case 'LeaveNotify': this.handleExit(wid); break;
+        }
+      } catch (err) { console.log(err); }
     });
   }
 

@@ -12,9 +12,7 @@ module.exports = function set(node, parent = null) {
     geo.h = n.geo.h;
   } else {
     if (p.dir === 'ttb') {
-      const ma = p.ratios
-        ? (p.w / p.children.length) * (p.ratios[p.children.indexOf(node)])
-        : (p.w / p.children.length);
+      const ma = (p.w / p.children.length) * (n.ratio || 1);
 
       geo.w = ma - (p.gaps ? (p.gaps[1] + p.gaps[3]) : 0);
       geo.h = p.h - (p.gaps ? (p.gaps[0] + p.gaps[2]) : 0);
@@ -26,9 +24,7 @@ module.exports = function set(node, parent = null) {
         : p.x + (p.gaps ? p.gaps[3] : 0);
 
     } else {
-      const ma = p.ratios
-        ? (p.h / p.children.length) * (p.ratios[p.children.indexOf(node)])
-        : (p.h / p.children.length);
+      const ma = (p.h / p.children.length) * (n.ratio || 1);
 
       geo.h = ma - (p.gaps ? (p.gaps[0] + p.gaps[2]) : 0);
       geo.w = p.w - (p.gaps ? (p.gaps[1] + p.gaps[3]) : 0);
@@ -42,6 +38,8 @@ module.exports = function set(node, parent = null) {
   }
 
   n.geo = geo;
+
+  // console.log(n, p);
 
   if (n.children) n.children.forEach(c => set(c, n.id));
 }

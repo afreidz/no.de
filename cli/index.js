@@ -39,6 +39,7 @@ yargs(hideBin(process.argv))
           "toggle-split",
           "toggle-float",
           "toggle-brain",
+          "move-within",
           "exec",
           "flip",
           "kill",

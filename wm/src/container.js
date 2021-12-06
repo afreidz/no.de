@@ -3,28 +3,22 @@ const Cache = new Map();
 class Container {
   #children;
 
-  constructor(opts = {}) {
-    // super();
-
+  constructor(parent, id) {
     this.x = 0;
     this.y = 0;
     this.w = 0;
     this.h = 0;
-    this.dir = opts.dir;
-    this.gaps = opts.gaps;
+    this.parent = parent;
     this.#children = new Set;
-    this.parent = opts.parent;
-    this.ratios = opts.ratios;
-    this.isRoot = !this.parent;
-    this.id = opts.id || Cache.size + 1;
-
-    //For Debugging
-    this.emit = console.log;
-    this.decorate = !!opts.decorate;
+    this.id = id || Cache.size + 1;
 
     if (this.parent) Container.getById(this.parent).append(this);
 
     Cache.set(this.id, this);
+  }
+
+  get isRoot() {
+    return !this.parent;
   }
 
   set geo(geo = {}) {
@@ -62,14 +56,22 @@ class Container {
     return this.children.map(c => ([c, Container.getById(c).descendents].flat())).flat();
   }
 
-  append(c) {
+  append(c, i = null) {
     if (!(c instanceof Container)) return this.emit('error', 'Appended node must be a <Container>');
     c.parent = this.id;
-    this.#children.add(c.id);
+    if (i !== null) {
+      console.log('Children', this.children);
+      const kids = this.children;
+      kids.splice(i, 0, c.id);
+      this.#children = new Set(kids);
+      console.log('New Children', this.children);
+    } else {
+      this.#children.add(c.id);
+    }
   }
 
   remove(c) {
-    if (!(c instanceof Container)) return this.emit('error', 'Appended node must be a <Container>');
+    if (!(c instanceof Container)) return this.emit('error', 'Removed node must be a <Container>');
     c.parent = null;
     this.#children.delete(c.id);
   }
