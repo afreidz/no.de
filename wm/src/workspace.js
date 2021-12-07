@@ -1,4 +1,5 @@
-const updateLayout = require('./layout.js');
+const Float = require('./float.js');
+const Wrapper = require('./wrapper.js');
 const Container = require('./container.js');
 let count = 1;
 
@@ -13,6 +14,9 @@ class Workspace extends Container {
     this.text = text;
     this.dir = 'ltr';
     this.geo = geo;
+
+    new Wrapper(this.id);
+    new Float(this.id);
 
     count += 1;
   }

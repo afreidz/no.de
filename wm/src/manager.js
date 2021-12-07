@@ -107,8 +107,6 @@ class Manager {
       w: sdims.w - 10,
     };
     const ws = new Workspace(geo, screen, title);
-    ws.append(new Wrapper());
-    ws.append(new Float());
     this.workspaces.push(ws);
     this.activateWorkspace(this.workspaces.length - 1);
     this.ipc.send('wm', { message: 'workspace-added', workspaces: this.workspaces.map(ws => ws.serialize()) });
