@@ -25,7 +25,6 @@ class Manager {
     this.ipc = new IPCClient(['wm']);
 
     this.ipc.on('wm', data => {
-      // console.log(data);
       try {
         switch (data.msg) {
           case 'query':
@@ -203,17 +202,20 @@ class Manager {
       ? Wrapper.getById(this.focusedWindow.parent)
       : ws.getWrapperByCoords(...this.mouse);
 
-    if (!wrap) return;
+    if (!wrap || ws.children.length === 1) return;
 
-    const idx = ws.children.indexOf(wrap.id);
-    const existingRatio = ws.ratios[idx];
-    const newRatio = ((wrap.h + px) * existingRatio) / wrap.h;
-    const ratioDelta = newRatio - existingRatio;
+    const ratio = wrap.ratio || 1;
+    const newRatio = ((wrap.h + px) * ratio) / wrap.h;
+    const ratioDelta = newRatio - ratio;
     const spreadRatio = ratioDelta / (ws.children.length - 1);
 
-    ws.ratios.forEach((r, i) => {
-      if (i === idx) return ws.ratios[i] = newRatio;
-      return ws.ratios[i] = ws.ratios[i] - spreadRatio;
+    ws.children.forEach(c => {
+      const w = Wrapper.getById(c);
+      if (w === wrap) {
+        wrap.ratio = newRatio;
+      } else {
+        w.ratio = w.ratio - spreadRatio;
+      }
     });
 
     this.layout(ws.id);
@@ -231,17 +233,20 @@ class Manager {
 
     const win = this.focusedWindow || Window.getByCoords(...this.mouse);
 
-    if (!win) return;
+    if (!win || wrap.children.length === 1) return;
 
-    const idx = wrap.children.indexOf(win.id);
-    const existingRatio = wrap.ratios[idx];
-    const newRatio = ((win.w + px) * existingRatio) / win.w;
-    const ratioDelta = newRatio - existingRatio;
+    const ratio = win.ratio || 1;
+    const newRatio = ((win.w + px) * ratio) / win.w;
+    const ratioDelta = newRatio - ratio;
     const spreadRatio = ratioDelta / (wrap.children.length - 1);
 
-    wrap.ratios.forEach((r, i) => {
-      if (i === idx) return wrap.ratios[i] = newRatio;
-      return wrap.ratios[i] = wrap.ratios[i] - spreadRatio;
+    wrap.children.forEach((c, i) => {
+      const w = Window.getById(c);
+      if (w === win) {
+        win.ratio = newRatio;
+      } else {
+        w.ratio = w.ratio - spreadRatio;
+      }
     });
 
     this.layout(wrap.parent);

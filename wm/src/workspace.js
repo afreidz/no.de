@@ -30,6 +30,12 @@ class Workspace extends Container {
     }
   }
 
+  get ratioOverage() {
+    return this.children.length - this.children.reduce((r, id) => {
+      return r + (Container.getById(id).ratio || 1);
+    }, 0);
+  }
+
   serialize() {
     return {
       dir: this.dir,
@@ -53,7 +59,24 @@ class Workspace extends Container {
       c.geo = this.geo;
     } else {
       super.append(c, i);
+
+      const ratioDiff = this.ratioOverage / (this.children.length - 1);
+      this.children.forEach(id => {
+        const w = Container.getById(id);
+        if (w === c) return;
+        w.ratio += ratioDiff;
+      });
     }
+  }
+
+  remove(c) {
+    super.remove(c);
+
+    const ratioDiff = this.ratioOverage / this.children.length;
+    this.children.forEach(id => {
+      const w = Container.getById(id);
+      w.ratio += ratioDiff;
+    });
   }
 
   getWrapperByCoords(x, y) {

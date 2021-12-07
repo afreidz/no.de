@@ -2,6 +2,7 @@ const Cache = new Map();
 
 class Container {
   #children;
+  #ratioCache;
 
   constructor(parent, id) {
     this.x = 0;
@@ -9,12 +10,26 @@ class Container {
     this.w = 0;
     this.h = 0;
     this.parent = parent;
+    this.#ratioCache = null;
     this.#children = new Set;
     this.id = id || Cache.size + 1;
+    Cache.set(this.id, this);
 
     if (this.parent) Container.getById(this.parent).append(this);
+  }
 
-    Cache.set(this.id, this);
+  get ratio() {
+    const p = Container.getById(this.parent);
+    if (p.children.length === 1) return 1;
+    return this.#ratioCache || 1;
+  }
+
+  set ratio(n) {
+    this.#ratioCache = +n;
+  }
+
+  set ratioCache(n) {
+    this.#ratioCache = n;
   }
 
   get isRoot() {
@@ -60,11 +75,9 @@ class Container {
     if (!(c instanceof Container)) return this.emit('error', 'Appended node must be a <Container>');
     c.parent = this.id;
     if (i !== null) {
-      console.log('Children', this.children);
       const kids = this.children;
       kids.splice(i, 0, c.id);
       this.#children = new Set(kids);
-      console.log('New Children', this.children);
     } else {
       this.#children.add(c.id);
     }

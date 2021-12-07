@@ -4,7 +4,6 @@ class Window extends Container {
   #floating;
   constructor(parent, id) {
     super(parent, id);
-    this.ratio = 1;
     this.mapped = false;
     this.#floating = false;
     this.parentCache = null;
