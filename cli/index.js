@@ -67,9 +67,11 @@ function flush() {
     "no.de-compositor",
   ];
 
-  spawn('npx', ['pm2', 'flush', ...names], {
-    stdio: 'inherit',
-    cwd: join(__dirname, '../')
+  names.forEach(n => {
+    spawn('npx', ['pm2', 'flush', n], {
+      stdio: 'inherit',
+      cwd: join(__dirname, '../')
+    });
   });
 }
 
