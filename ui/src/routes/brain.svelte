@@ -2,27 +2,31 @@
   import { onMount } from 'svelte';
   import { writable } from 'svelte/store';
   import copy from 'copy-text-to-clipboard';
+  import RunIcon from '$lib/icons/run.svelte';
+  import BrainIcon from '$lib/icons/brain.svelte';
+  import RocketIcon from '$lib/icons/rocket.svelte';
+  import CalculatorIcon from '$lib/icons/calculator.svelte';
 
   let modes = [
     {
       name: 'default',
       shortcut: null,
-      icon: '🧠',
+      icon: BrainIcon,
     },
     {
       name: 'launch',
       shortcut: 'l',
-      icon: '🚀',
+      icon: RocketIcon,
     },
     {
       name: 'command',
       shortcut: 'r',
-      icon: '>_',
+      icon: RunIcon,
     },
     {
       name: 'calculator',
       shortcut: 'c',
-      icon: '🖩',
+      icon: CalculatorIcon,
     }
   ];
 
@@ -110,7 +114,9 @@
 
 <main>
   <label>
-    <i>{current.icon}</i>
+    <i>
+      <svelte:component this={current.icon}/>
+    </i>
     <input bind:this={input} bind:value={query} on:keyup={search} on:keydown={capture} type="text"/>
   </label>
   <ul>
@@ -128,6 +134,8 @@
   @use "$lib/styles" as *;
   @import "$lib/styles/base.css";
 
+  $width: 50%;
+
   main {
     height: 100%;
     display: flex;
@@ -138,19 +146,19 @@
     flex-direction: column;
     justify-content: center;
     color: map.get($theme, 'text-color');
-    background: map.get($theme, 'panel-background');
   }
-
+  
   label {
-    width: 60%;
+    width: $width;
     display: flex;
-    padding: map.get($spacing, 2);
     border-bottom: 1px solid map.get($theme, 'dividers');
+    background: map.get($theme, 'tokens', 'panel-background');
+    padding: map.get($theme, 'spacing', 2) map.get($theme, 'spacing', 5);
   }
 
   i {
-    flex: 0 0 2rem;
-    padding-right: map.get($spacing, 1);
+    flex: 0 0 7rem;
+    padding-right: map.get($theme, 'spacing', 1);
   }
 
   input {
@@ -160,28 +168,30 @@
   }
 
   ul {
-    width: 60%;
+    width: $width;
     overflow: auto;
     font-weight: 200;
     font-size: 3.5rem;
     line-height: 5rem;
     height: calc(6 * 5rem);
+    background: map.get($theme, 'tokens', 'panel-background');
+
     &::-webkit-scrollbar {
       display: none;
     }
     li {
       display: flex;
       justify-content: space-between;
-      padding: 0 map.get($spacing, 1);
+      padding: 0 map.get($theme, 'spacing', 3);
 
       small {
         font-weight: 500;
         font-size: 1.5rem;
-        color: map.get($theme, 'dim-text-color');
+        color: map.get($theme, 'tokens', 'dim-text-color');
       }
 
       &.active {
-        background: map.get($theme, "highlighted-background");
+        background: map.get($theme, 'tokens', "highlighted-background");
       }
     }
   }

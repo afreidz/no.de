@@ -1,21 +1,8 @@
-@use "sass:map";
-@use "sass:color";
+@use 'sass:map';
 
-$base: rgb(218,253,0);
-
-$colors: (
-  "base": $base,
-  "white": color.adjust($base, $lightness: 40%),
-  "black": color.adjust($base, $lightness: -40%),
+@use './default.scss' with (
+  $base-color: rgb(17,12,44),
+  $rem: 10px,
 );
 
-$theme: (
-  "rem": 10px,
-  "panel-radius": 0px,
-  "text-color": map.get($colors, "black"),
-  "dividers": color.adjust(map.get($colors, "black"), $alpha: -0.6),
-  "dim-text-color": color.adjust(map.get($colors, "black"), $alpha: -0.8),
-  "highlighted-background": color.adjust(map.get($colors, "black"), $alpha: -0.8),
-  "panel-shadow": color.adjust(map.get($colors, "black"), $alpha: -0.6) 0px 1px 4px,
-  "panel-background": radial-gradient(circle at top, map.get($colors, "base"), color.adjust(map.get($colors, "base"), $lightness: -8%)),
-);
+$theme: map.deep-merge(default.$theme, ());

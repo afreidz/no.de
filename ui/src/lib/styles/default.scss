@@ -1,0 +1,37 @@
+@use "sass:map";
+@use "sass:math";
+@use "sass:color";
+
+$rem: 15px !default;
+$base-color: rgb(55,111,97) !default;
+
+$-colors: (
+  "base": $base-color,
+  "light": color.adjust($base-color, $lightness: 50%),
+  "dark": color.adjust($base-color, $lightness: -40%),
+);
+
+$-spacing: (
+  0: math.div($rem, 2),
+  1: $rem,
+  2: $rem * 1.1,
+  3: $rem * 1.25,
+  4: $rem * 1.375,
+  5: $rem * 1.5,
+);
+  
+$-tokens: (
+  "panel-radius": 0px,
+  "text-color": map.get($-colors, "light"),
+  "panel-background": map.get($-colors, "base"),
+  "dividers": color.adjust(map.get($-colors, "light"), $alpha: -0.6),
+  "dim-text-color": color.adjust(map.get($-colors, "light"), $alpha: -0.8),
+  "highlighted-background": color.adjust(map.get($-colors, "light"), $alpha: -0.8),
+  "panel-shadow": color.adjust(map.get($-colors, "dark"), $alpha: -0.6) 0px 1px 4px,
+);
+
+$theme: (
+  colors: $-colors,
+  spacing: $-spacing,
+  tokens: $-tokens,
+);

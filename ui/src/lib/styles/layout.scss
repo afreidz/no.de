@@ -6,6 +6,6 @@
   width: 100%;
   height: 100%;
   background: rgba(0,0,0,0);
-  font-size: map.get($theme, "rem");
-  color: map.get($theme, "text-color");
+  font-size: map.get($theme, "spacing", 1);
+  color: map.get($theme, 'tokens', "text-color");
 }

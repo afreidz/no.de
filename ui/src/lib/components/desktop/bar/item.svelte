@@ -16,9 +16,7 @@
     display: flex;
     cursor: pointer;
     font-size: 1.5rem;
-    line-height: 0.5rem;
     align-items: stretch;
-    color: var(--text-color);
     justify-content: stretch;
   }
 </style>
