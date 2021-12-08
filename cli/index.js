@@ -32,6 +32,7 @@ yargs(hideBin(process.argv))
         choices: [
           "activate-workspace",
           "change-horizontal",
+          "toggle-workspaces",
           "moveto-workspace",
           "cycle-workspace",
           "change-vertical",

@@ -4,13 +4,11 @@ const Container = require('./container.js');
 let count = 1;
 
 class Workspace extends Container {
-  #active;
-
   constructor(geo = { x: 0, y: 0, w: 1, h: 1, }, screen = 0, text = count) {
     super();
     this.floatContainer = null;
-    this.#active = false;
     this.screen = screen;
+    this.active = false;
     this.text = text;
     this.dir = 'ltr';
     this.geo = geo;
@@ -19,19 +17,6 @@ class Workspace extends Container {
     new Float(this.id);
 
     count += 1;
-  }
-
-  get active() {
-    return this.#active;
-  }
-
-  set active(v) {
-    this.#active = !!v;
-
-    if (!!v) {
-      const others = Workspace.getByScreen(this.screen).filter(ws => ws.id !== this.id);
-      others.forEach(ws => (ws.active = false));
-    }
   }
 
   get ratioOverage() {

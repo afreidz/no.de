@@ -11,6 +11,8 @@ const IPCClient = require('no.de-ipc/client');
 const { Workspace } = require('./workspace.js');
 
 class Manager {
+  #activeWSCache;
+
   constructor(opts = { dbug: false, id: +new Date }) {
     this.drag = null;
     this.brain = null;
@@ -21,6 +23,7 @@ class Manager {
     this.specialWids = [];
     this.debug = opts.debug;
     this.brainActive = false;
+    this.#activeWSCache = null;
     this.id = opts.id || +new Date;
     this.ipc = new IPCClient(['wm']);
 
@@ -48,6 +51,7 @@ class Manager {
               case 'add-workspace': this.addWorkspace(...data.args); break;
               case 'cycle-workspace': this.cycleWorkspace(); break;
               case 'toggle-split': this.split = !this.split; break;
+              case 'toggle-workspaces': this.toggleAllWS(); break;
               case 'toggle-float': this.toggleFloat(); break;
               case 'exec': this.exec(...data.args); break;
               case 'flip': this.flip(); break;
@@ -76,11 +80,9 @@ class Manager {
     this.screens = screens;
     this.xscreen = display.screen[0];
 
-    if (!this.debug) {
-      console.log('info', `Initializing Window Manager...`);
-      client.ChangeWindowAttributes(this.xscreen.root, X11.eventMasks.manager, e => console.log('error', e.message));
-      console.log('info', `${this.xscreen.root} is now the window manager`);
-    }
+    console.log('info', `Initializing Window Manager...`);
+    client.ChangeWindowAttributes(this.xscreen.root, X11.eventMasks.manager, e => console.log('error', e.message));
+    console.log('info', `${this.xscreen.root} is now the window manager`);
 
     ioHook.on('mousedrag', e => {
       if (e.shiftKey && e.metaKey) {
@@ -96,6 +98,23 @@ class Manager {
     await this.listen();
     await this.ipc.send('wm', { msg: 'initialized' });
     return this;
+  }
+
+  toggleAllWS() {
+    if (this.#activeWSCache) {
+      this.activateWorkspace(this.workspaces.indexOf(this.#activeWSCache));
+      this.#activeWSCache = null;
+    } else {
+      const screen = this.getScreenByCoords(...this.mouse);
+      Workspace.getByScreen(screen.i).forEach(ws => {
+        if (ws.active) {
+          this.#activeWSCache = ws;
+          ws.active = false;
+          this.layout(ws.id);
+        }
+      });
+      this.ipc.send('wm', { message: 'workspaces-hidden', workspaces: this.workspaces.map(ws => ws.serialize()) });
+    }
   }
 
   addWorkspace(screen = 0, title) {
@@ -117,12 +136,17 @@ class Manager {
     const others = Workspace.getByScreen(ws.screen).filter(w => ws.id !== w.id);
     ws.active = true;
     this.layout(ws.id);
-    others.forEach(ws => this.layout(ws.id));
+    others.forEach(ws => {
+      ws.active = false;
+      this.layout(ws.id);
+    });
     this.ipc.send('wm', { message: 'workspace-activated', workspaces: this.workspaces.map(ws => ws.serialize()) });
   }
 
   cycleWorkspace() {
     const ws = this.getWorkspaceByCoords(...this.mouse);
+    if (!ws) return;
+
     const screenws = Workspace.getByScreen(ws.screen);
     const ci = screenws.indexOf(ws);
     const n = ci + 1 >= screenws.length ? 0 : ci + 1;
@@ -320,6 +344,7 @@ class Manager {
 
       if (this.brain === wid) return;
       if (!!Window.getById(wid)) return;
+      if (this.#activeWSCache) this.toggleAllWS();
 
       let ws = Workspace.getById(this.focusedWindow?.root);
 
@@ -383,12 +408,10 @@ class Manager {
     try {
       if (!this.drag) this.drag = { x, y };
       const win = this.focusedWindow;
-      const dx = x - this.drag.x;
-      const dy = y - this.drag.y;
-      this.client.MoveWindow(win.id, (win.x + dx), (win.y + dy));
-      win.x += dx;
-      win.y += dy;
+      win.x -= (this.drag.x - x);
+      win.y -= (this.drag.y - y);
       this.drag = { x, y };
+      this.client.MoveWindow(win.id, win.x, win.y);
     } catch (err) { console.log(err); }
   }
 
@@ -517,16 +540,20 @@ class Manager {
     });
   }
 
-  getWorkspaceByCoords(x, y) {
-    const screen = this.screens.find(s => {
+  getScreenByCoords(x, y) {
+    return this.screens.find(s => {
       return x >= s.x
         && x <= (s.x + s.w)
         && y >= s.y
         && y <= (s.y + s.h);
     });
+  }
+
+  getWorkspaceByCoords(x, y) {
+    const screen = this.getScreenByCoords(x, y);
     return Workspace.getAll().find(ws => {
       return ws.active
-        && ws.screen === this.screens.indexOf(screen);
+        && ws.screen === screen.i;
     });
   }
 }
