@@ -72,7 +72,8 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    padding: map.get($theme, 'spacing', 1);
+    box-shadow: map.get($theme, 'tokens', 'panel-shadow');
+    background-color: map.get($theme, 'tokens', 'panel-background');
   }
 
   .screen {

@@ -16,5 +16,6 @@
 
   path {
     stroke: map.get($theme, 'tokens', 'text-color');
+    stroke-width: 2;
   }
 </style>

@@ -1,11 +1,11 @@
-@use "sass:map";
-@use "./theme" as *;
+@use 'sass:map';
+@use './theme' as *;
 
 :global(html, body) {
   margin: 0;
   width: 100%;
   height: 100%;
   background: rgba(0,0,0,0);
-  font-size: map.get($theme, "spacing", 1);
-  color: map.get($theme, 'tokens', "text-color");
+  font-size: map.get($theme, 'spacing', 1);
+  color: map.get($theme, 'tokens', 'text-color');
 }

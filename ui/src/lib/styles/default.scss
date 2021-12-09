@@ -1,14 +1,18 @@
-@use "sass:map";
-@use "sass:math";
-@use "sass:color";
+@use 'sass:map';
+@use 'sass:math';
+@use 'sass:color';
 
 $rem: 15px !default;
+$highlights: () !default;
 $base-color: rgb(55,111,97) !default;
+$light-color: color.adjust($base-color, $lightness: 50%) !default;
+$dark-color: color.adjust($base-color, $lightness: -40%) !default;
 
 $-colors: (
-  "base": $base-color,
-  "light": color.adjust($base-color, $lightness: 50%),
-  "dark": color.adjust($base-color, $lightness: -40%),
+  'base': $base-color,
+  'dark': $dark-color,
+  'light': $light-color,
+  'highlights': $highlights,
 );
 
 $-spacing: (
@@ -21,13 +25,13 @@ $-spacing: (
 );
   
 $-tokens: (
-  "panel-radius": 0px,
-  "text-color": map.get($-colors, "light"),
-  "panel-background": map.get($-colors, "base"),
-  "dividers": color.adjust(map.get($-colors, "light"), $alpha: -0.6),
-  "dim-text-color": color.adjust(map.get($-colors, "light"), $alpha: -0.8),
-  "highlighted-background": color.adjust(map.get($-colors, "light"), $alpha: -0.8),
-  "panel-shadow": color.adjust(map.get($-colors, "dark"), $alpha: -0.6) 0px 1px 4px,
+  'panel-radius': 0px,
+  'text-color': map.get($-colors, 'light'),
+  'panel-background': map.get($-colors, 'base'),
+  'dividers': color.adjust(map.get($-colors, 'light'), $alpha: -0.6),
+  'dim-text-color': color.adjust(map.get($-colors, 'light'), $alpha: -0.8),
+  'highlighted-background': color.adjust(map.get($-colors, 'light'), $alpha: -0.8),
+  'panel-shadow': color.adjust(map.get($-colors, 'dark'), $alpha: -0.6) 0px 1px 4px,
 );
 
 $theme: (

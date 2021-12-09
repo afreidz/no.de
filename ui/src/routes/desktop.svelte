@@ -1,9 +1,13 @@
 <script>
-import Bar from '$lib/components/desktop/bar/index.svelte';
-const bg = 'url(/img/wall.jpg) bottom left no-repeat';
+  import WallTile from '$lib/wallpaper/tile.svelte';
+  import Bar from '$lib/components/desktop/bar/index.svelte';
 </script>
 
-<main style={`background: ${bg}`}>
+<div id="wallpaper">
+  <WallTile opacity={0.4}/>
+</div>
+
+<main>
   <Bar/>
 </main>
 
@@ -11,6 +15,17 @@ const bg = 'url(/img/wall.jpg) bottom left no-repeat';
   @use "sass:map";
   @use "$lib/styles" as *;
   @import "$lib/styles/base.css";
+
+  :global(body) {
+    overflow: hidden;
+  }
+
+  #wallpaper {
+    z-index: -1;
+    top: 0; bottom: 0;
+    left: 0; right: 0;
+    position: absolute;
+  }
 
   main {
     height: 100%;

@@ -1,5 +1,5 @@
 const Container = require('./container.js');
-const gap = 5;
+const gap = 10;
 
 class Wrapper extends Container {
   constructor(p, i = null) {

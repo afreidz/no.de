@@ -120,10 +120,10 @@ class Manager {
   addWorkspace(screen = 0, title) {
     const sdims = this.screens[screen];
     const geo = {
-      y: sdims.y + 40,
-      h: sdims.h - 45,
-      x: sdims.x + 5,
-      w: sdims.w - 10,
+      y: sdims.y + 50,
+      h: sdims.h - 60,
+      x: sdims.x + 10,
+      w: sdims.w - 20,
     };
     const ws = new Workspace(geo, screen, title);
     this.workspaces.push(ws);

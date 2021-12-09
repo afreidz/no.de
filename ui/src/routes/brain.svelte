@@ -113,20 +113,22 @@
 </script>
 
 <main>
-  <label>
-    <i>
-      <svelte:component this={current.icon}/>
-    </i>
-    <input bind:this={input} bind:value={query} on:keyup={search} on:keydown={capture} type="text"/>
-  </label>
-  <ul>
-    {#each $results as result, i }
-    <li class:active={i === active} bind:this={resultDOM[i]}>
-      <span>{result.item.name}</span>
-      <small>{result.item.type}</small>
-    </li>
-    {/each}
-  </ul>
+  <div class="brain">
+    <label>
+      <i>
+        <svelte:component this={current.icon}/>
+      </i>
+      <input bind:this={input} bind:value={query} on:keyup={search} on:keydown={capture} type="text"/>
+    </label>
+    <ul>
+      {#each $results as result, i }
+      <li class:active={i === active} bind:this={resultDOM[i]}>
+        <span>{result.item.name}</span>
+        <small>{result.item.type}</small>
+      </li>
+      {/each}
+    </ul>
+  </div>
 </main>
 
 <style lang="scss">
@@ -147,12 +149,16 @@
     justify-content: center;
     color: map.get($theme, 'text-color');
   }
+
+  .brain {
+    width: $width;
+    box-shadow: map.get($theme, 'tokens', 'panel-shadow');
+    background: map.get($theme, 'tokens', 'panel-background');
+  }
   
   label {
-    width: $width;
     display: flex;
-    border-bottom: 1px solid map.get($theme, 'dividers');
-    background: map.get($theme, 'tokens', 'panel-background');
+    border-bottom: 1px solid map.get($theme, 'tokens', 'dividers');
     padding: map.get($theme, 'spacing', 2) map.get($theme, 'spacing', 5);
   }
 
@@ -168,13 +174,11 @@
   }
 
   ul {
-    width: $width;
     overflow: auto;
     font-weight: 200;
     font-size: 3.5rem;
     line-height: 5rem;
     height: calc(6 * 5rem);
-    background: map.get($theme, 'tokens', 'panel-background');
 
     &::-webkit-scrollbar {
       display: none;

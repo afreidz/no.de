@@ -1,8 +1,26 @@
 @use 'sass:map';
 
+$-highlights: (
+  1: #F7768E,
+  2: #FF9E64,
+  3: #E0AF68,
+  4: #9ECE6A,
+  5: #73DACA,
+  6: #2AC3DE,
+  7: #BB9AF7,
+  8: #c0caf5,
+);
+
 @use './default.scss' with (
-  $base-color: rgb(17,12,44),
+  $base-color: #24283b,
+  $light-color: #9aa5ce,
+  $dark-color: #0e1018,
+  $highlights: $-highlights,
   $rem: 10px,
 );
 
-$theme: map.deep-merge(default.$theme, ());
+$-panel-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+
+$theme: map.merge(default.$theme, 'tokens', (
+  'panel-shadow': $-panel-shadow,
+));
