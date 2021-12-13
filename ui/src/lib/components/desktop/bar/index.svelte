@@ -2,43 +2,31 @@
   <div class="screen">
     <Group>
       <Item>
-        {#if left.find(ws => ws.active)?.dir === 'ltr' }
-          <span class="mode"><ColumnIcon/></span>
-        {:else}
-          <span class="mode"><RowIcon/></span>
-        {/if}
+        {#each left as ws, i}
+          <small class="ws ws_{i} ws_left" class:active={ws.active}>{#if ws.active}⬢{:else}⬡{/if}</small>
+        {/each}
       </Item>
-      {#each left as ws, i}
-        {#if ws.active}
-          <Item remAfter={i === left.length ? 1 : 0}>
-            <small class:active={ws.active}>{ws.text}</small>
-          </Item>
-        {/if}
-      {/each}
+      <Item remBefore={1}>
+        <small><LayoutIcon split={$split} dir={left.find(ws => ws.active)?.dir}/></small>
+      </Item>
     </Group>
     <Group>
-      <Item><small class="active"><ClockIcon/> <span>{formattedTime}</span></small></Item>
+      <Item><small class="active clock"><ClockIcon/> <span>{formattedTime}</span></small></Item>
     </Group>
   </div>
   <div class="screen">
     <Group>
       <Item>
-        {#if right.find(ws => ws.active)?.dir === 'ltr' }
-          <span class="mode"><ColumnIcon/></span>
-        {:else}
-          <span class="mode"><RowIcon/></span>
-        {/if}
+        {#each right as ws, i}
+          <small class="ws ws_{i} ws_right" class:active={ws.active}>{#if ws.active}⬢{:else}⬡{/if}</small>
+        {/each}
       </Item>
-      {#each right as ws, i}
-        {#if ws.active}
-          <Item remBefore={i === 0} remAfter={i === left.length ? 1 : 0}>
-            <small class:active={ws.active}>{ws.text}</small>
-          </Item>
-        {/if}
-      {/each}
+      <Item remBefore={1}>
+        <small><LayoutIcon split={$split} dir={right.find(ws => ws.active)?.dir}/></small>
+      </Item>
     </Group>
     <Group>
-      <Item><small class="active"><ClockIcon/> <span>{formattedTime}</span></small></Item>
+      <Item><small class="clock active"><ClockIcon/> <span>{formattedTime}</span></small></Item>
     </Group>
   </div>
 </section>
@@ -47,10 +35,10 @@
   import ws from '$lib/stores/wm';
   import Item from './item.svelte';
   import Group from './group.svelte';
+  import split from '$lib/stores/split';
   import { time } from '$lib/stores/clock';
-  import RowIcon from '$lib/icons/rows.svelte';
   import ClockIcon from '$lib/icons/clock.svelte';
-  import ColumnIcon from '$lib/icons/columns.svelte';
+  import LayoutIcon from '$lib/icons/layout.svelte';
 
   let formattedTime;
   let left = [];
@@ -70,8 +58,9 @@
 
   section {
     display: flex;
-    align-items: flex-start;
+    align-items: stretch;
     justify-content: space-between;
+    padding: map.get($theme, 'spacing', 0);
     box-shadow: map.get($theme, 'tokens', 'panel-shadow');
     background-color: map.get($theme, 'tokens', 'panel-background');
   }
@@ -92,22 +81,48 @@
 
   small {
     display: flex;
-    font-size: 1rem;
     font-weight: bold;
     align-items: center;
     color: map.get($theme, 'tokens', 'dim-text-color');
+
+    &.ws {
+      font-size: 1.5rem;
+      margin-right: map.get($theme, 'spacing', 1);
+      &:last-of-type {
+        margin-right: 0;
+      }
+    }
+
+    @for $i from 0 through 2 {
+      &.ws_left.ws_#{$i}.active {
+        color: map.get($theme, 'colors', 'highlights', ($i + 1));
+      }
+      &.ws_right.ws_#{$i}.active {
+        color: map.get($theme, 'colors', 'highlights', ($i + 4));
+      }
+    }
+
+    &.clock {
+      font-size: 1rem;
+
+      & > :global(svg) {
+        margin-right: map.get($theme, 'spacing', 0);
+      }
+    }
 
     &.active {
       color: inherit;
     }
 
+    
+
     & > :global(svg) {
-      height: 1.2rem;
-      margin-right: map.get($theme, 'spacing', 0);
+      height: 1rem;
     }
   }
 
   .mode {
-    width: 1.5rem;
+    display: flex;
+    width: 1rem;
   }
 </style>

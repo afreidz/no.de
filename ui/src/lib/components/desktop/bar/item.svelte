@@ -9,14 +9,19 @@
   <slot/>
 </button>
 
-<style>
+<style lang="scss">
+  @use 'sass:map';
+  @use '$lib/styles' as *;
+
   button {
     height: 100%;
-    padding: 1rem;
     display: flex;
     cursor: pointer;
     font-size: 1.5rem;
     align-items: stretch;
+    border-radius: 50vh;
     justify-content: stretch;
+    padding: 0 map.get($theme, 'spacing', 2);
+    background-color: map.get($theme, 'colors', 700);
   }
 </style>

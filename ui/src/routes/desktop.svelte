@@ -4,7 +4,7 @@
 </script>
 
 <div id="wallpaper">
-  <WallTile opacity={0.4}/>
+  <WallTile opacity={1}/>
 </div>
 
 <main>

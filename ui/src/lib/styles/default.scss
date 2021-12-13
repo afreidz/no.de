@@ -5,13 +5,28 @@
 $rem: 15px !default;
 $highlights: () !default;
 $base-color: rgb(55,111,97) !default;
-$light-color: color.adjust($base-color, $lightness: 50%) !default;
-$dark-color: color.adjust($base-color, $lightness: -40%) !default;
+$c100: color.adjust($base-color, $lightness: 70%) !default;
+$c200: color.adjust($base-color, $lightness: 60%) !default;
+$c300: color.adjust($base-color, $lightness: 40%) !default;
+$c400: color.adjust($base-color, $lightness: 20%) !default;
+$c500: $base-color !default;
+$c600: color.adjust($base-color, $lightness: -10%) !default;
+$c700: color.adjust($base-color, $lightness: -15%) !default;
+$c800: color.adjust($base-color, $lightness: -37%) !default;
+$c900: color.adjust($base-color, $lightness: -40%) !default;
+
 
 $-colors: (
   'base': $base-color,
-  'dark': $dark-color,
-  'light': $light-color,
+  100: $c100,
+  200: $c200,
+  300: $c300,
+  400: $c400,
+  500: $c500,
+  600: $c600,
+  700: $c700,
+  800: $c800,
+  900: $c900,
   'highlights': $highlights,
 );
 
@@ -26,12 +41,13 @@ $-spacing: (
   
 $-tokens: (
   'panel-radius': 0px,
-  'text-color': map.get($-colors, 'light'),
-  'panel-background': map.get($-colors, 'base'),
-  'dividers': color.adjust(map.get($-colors, 'light'), $alpha: -0.6),
-  'dim-text-color': color.adjust(map.get($-colors, 'light'), $alpha: -0.8),
-  'highlighted-background': color.adjust(map.get($-colors, 'light'), $alpha: -0.8),
-  'panel-shadow': color.adjust(map.get($-colors, 'dark'), $alpha: -0.6) 0px 1px 4px,
+  'text-color': map.get($-colors, 200),
+  'root-background': map.get($-colors, 900),
+  'panel-background': map.get($-colors, 800),
+  'dividers': color.adjust(map.get($-colors, 200), $alpha: -0.6),
+  'dim-text-color': color.adjust(map.get($-colors, 200), $alpha: -0.8),
+  'highlighted-background': color.adjust(map.get($-colors, 200), $alpha: -0.8),
+  'panel-shadow': color.adjust(map.get($-colors, 900), $alpha: -0.6) 0px 1px 4px,
 );
 
 $theme: (

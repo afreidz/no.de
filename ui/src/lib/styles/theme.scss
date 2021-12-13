@@ -1,21 +1,19 @@
 @use 'sass:map';
-
-$-highlights: (
-  1: #F7768E,
-  2: #FF9E64,
-  3: #E0AF68,
-  4: #9ECE6A,
-  5: #73DACA,
-  6: #2AC3DE,
-  7: #BB9AF7,
-  8: #c0caf5,
-);
-
 @use './default.scss' with (
-  $base-color: #24283b,
-  $light-color: #9aa5ce,
-  $dark-color: #0e1018,
-  $highlights: $-highlights,
+  $base-color: #6E6C7C,
+  $highlights: (
+    1: #E28C8C,
+    2: #ECBFBD,
+    3: #F7C196,
+    4: #EADDA0,
+    5: #B3E1A3,
+    6: #A4B9EF,
+    7: #C6AAE8,
+    8: #D7DAE0,
+  ),
+  $c900: #0e1112,
+  $c800: #131718,
+  $c700: #2d3638,
   $rem: 10px,
 );
 
