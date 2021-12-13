@@ -13,9 +13,6 @@ class Workspace extends Container {
     this.dir = 'ltr';
     this.geo = geo;
 
-    new Wrapper(this.id);
-    new Float(this.id);
-
     count += 1;
   }
 
@@ -45,10 +42,11 @@ class Workspace extends Container {
   append(c, i = null) {
     if (c.constructor.name === 'Float') {
       this.floatContainer = c;
+      c.parent = this.id;
       c.geo = this.geo;
     } else {
       super.append(c, i);
-
+      c.dir = this.dir === 'ltr' ? 'ttb' : 'ltr';
       const ratioDiff = this.ratioOverage / (this.children.length - 1);
       this.children.forEach(id => {
         const w = Container.getById(id);

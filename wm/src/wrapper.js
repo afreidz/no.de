@@ -1,16 +1,12 @@
 const Container = require('./container.js');
-const gap = 10;
+const gap = 5;
 
 class Wrapper extends Container {
-  constructor(p, i = null) {
-    const parent = Container.getById(p);
+  constructor() {
     super();
-    this.dir = parent
-      ? parent.dir === 'ttb' ? 'ltr' : 'ttb'
-      : 'ttb';
-    this.gaps = [gap, gap, gap, gap];
     this.ratio = 1;
-    parent?.append(this, i);
+    this.dir = 'ttb';
+    this.gaps = [gap, gap, gap, gap];
   }
 
   get ratioOverage() {
@@ -34,6 +30,7 @@ class Wrapper extends Container {
     const ws = Container.getById(this.parent);
     if (this.children.length === 0 && ws.children.length > 1) {
       ws.remove(this);
+      this.deref();
       return this;
     }
 

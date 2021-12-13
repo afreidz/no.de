@@ -4,18 +4,15 @@ class Container {
   #children;
   #ratioCache;
 
-  constructor(parent, id) {
+  constructor(id) {
     this.x = 0;
     this.y = 0;
     this.w = 0;
     this.h = 0;
-    this.parent = parent;
     this.#ratioCache = null;
     this.#children = new Set;
     this.id = id || Cache.size + 1;
     Cache.set(this.id, this);
-
-    if (this.parent) Container.getById(this.parent).append(this);
   }
 
   get ratio() {

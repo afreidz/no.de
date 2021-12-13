@@ -1,9 +1,10 @@
+const Wrapper = require('./wrapper.js');
 const Container = require('./container.js');
 
 class Window extends Container {
   #floating;
-  constructor(parent, id) {
-    super(parent, id);
+  constructor(id) {
+    super(id);
     this.mapped = false;
     this.#floating = false;
     this.parentCache = null;
@@ -29,8 +30,18 @@ class Window extends Container {
       p.remove(this);
       fc.append(this);
     } else {
-      const p = Container.getById(this.parentCache);
+      const ws = Container.getById(this.root);
+      const fc = ws.floatContainer;
+
+      let p = Container.getById(this.parentCache);
+      if (!p) {
+        p = new Wrapper();
+        ws.append(p);
+      }
+
+      if (this.parent === fc.id) fc.remove(this);
       p.append(this);
+
       this.parentCache = null;
     }
   }

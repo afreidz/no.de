@@ -34,6 +34,9 @@ class Manager {
             if (data.type === 'workspaces') {
               this.ipc.send('wm', { message: 'workspaces', workspaces: this.workspaces.map(ws => ws.serialize()) });
             }
+            if (data.type === 'split') {
+              this.ipc.send('wm', { message: 'split', split: this.split });
+            }
             break;
           case 'command':
             switch (data.command) {
@@ -50,7 +53,10 @@ class Manager {
                 break;
               case 'add-workspace': this.addWorkspace(...data.args); break;
               case 'cycle-workspace': this.cycleWorkspace(); break;
-              case 'toggle-split': this.split = !this.split; break;
+              case 'toggle-split':
+                this.split = !this.split;
+                this.ipc.send('wm', { message: 'split', split: this.split });
+                break;
               case 'toggle-workspaces': this.toggleAllWS(); break;
               case 'toggle-float': this.toggleFloat(); break;
               case 'exec': this.exec(...data.args); break;
@@ -63,7 +69,7 @@ class Manager {
             break;
         }
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     });
 
@@ -80,9 +86,9 @@ class Manager {
     this.screens = screens;
     this.xscreen = display.screen[0];
 
-    console.log('info', `Initializing Window Manager...`);
-    client.ChangeWindowAttributes(this.xscreen.root, X11.eventMasks.manager, e => console.log('error', e.message));
-    console.log('info', `${this.xscreen.root} is now the window manager`);
+    console.log(`Initializing Window Manager...`);
+    client.ChangeWindowAttributes(this.xscreen.root, X11.eventMasks.manager, e => console.error(e.message));
+    console.log(`${this.xscreen.root} is now the window manager`);
 
     ioHook.on('mousedrag', e => {
       if (e.shiftKey && e.metaKey) {
@@ -120,12 +126,17 @@ class Manager {
   addWorkspace(screen = 0, title) {
     const sdims = this.screens[screen];
     const geo = {
-      y: sdims.y + 50,
-      h: sdims.h - 60,
-      x: sdims.x + 10,
-      w: sdims.w - 20,
+      y: sdims.y + 45,
+      h: sdims.h - 50,
+      x: sdims.x + 5,
+      w: sdims.w - 10,
     };
     const ws = new Workspace(geo, screen, title);
+    const wrap = new Wrapper();
+    const float = new Float();
+
+    ws.append(wrap);
+    ws.append(float);
     this.workspaces.push(ws);
     this.activateWorkspace(this.workspaces.length - 1);
     this.ipc.send('wm', { message: 'workspace-added', workspaces: this.workspaces.map(ws => ws.serialize()) });
@@ -173,7 +184,7 @@ class Manager {
         this.client.MoveWindow(win.id, win.x, win.y);
         this.client.ResizeWindow(win.id, win.w, win.h);
       }
-    } catch (err) { console.log(err); }
+    } catch (err) { console.error(err); }
   }
 
   exec(cmd) {
@@ -184,7 +195,7 @@ class Manager {
     try {
       if (this.specialWids.includes(this.focusedWindow.id) || !this.focusedWindow) return;
       this.client.DestroyWindow(this.focusedWindow.id);
-    } catch (err) { console.log(err); }
+    } catch (err) { console.error(err); }
   }
 
   layout(ws) {
@@ -210,7 +221,7 @@ class Manager {
             this.client.MapWindow(win.id);
           }
         }
-      } catch (err) { console.log(err); }
+      } catch (err) { console.error(err); }
     });
   }
 
@@ -275,7 +286,7 @@ class Manager {
   }
 
   flip() {
-    const ws = Workspace.getByCoords(...this.mouse)
+    const ws = Workspace.getByCoords(...this.mouse);
     if (!ws) return;
 
     ws.flip();
@@ -300,14 +311,14 @@ class Manager {
         this.client.SetInputFocus(this.brain);
         this.brainActive = true;
       }
-    } catch (err) { console.log(err); }
+    } catch (err) { console.error(err); }
   }
 
   getWinName(wid) {
     const { WM_NAME, STRING } = this.client.atoms;
     return new Promise(r => {
       this.client.GetProperty(0, wid, WM_NAME, STRING, 0, 10000000, (err, prop) => {
-        if (err) return console.error('error', err);
+        if (err) return console.error(err);
         const val = prop.data.toString();
         r(val);
       });
@@ -318,7 +329,7 @@ class Manager {
     const { WM_CLASS, STRING } = this.client.atoms;
     return new Promise(r => {
       this.client.GetProperty(0, wid, WM_CLASS, STRING, 0, 10000000, (err, prop) => {
-        if (err) return console.error('error', err);
+        if (err) return console.error(err);
         const val = prop.data.toString();
         r(val);
       });
@@ -328,12 +339,11 @@ class Manager {
   async handleMap(wid) {
     try {
       const name = await this.getWinName(wid);
-      console.log('info', `Map Request for ${wid}:${name}`);
+      console.log(`Map Request for ${wid}:${name}`);
       await this.setType(wid);
       console.log('Special WIDS:', this.brain, this.desktop);
 
       if (this.desktop === wid) {
-        console.log(this.xscreen.pixel_width, this.xscreen.pixel_height);
         this.client.MoveWindow(wid, 0, 0);
         this.client.ResizeWindow(wid, this.xscreen.pixel_width, this.xscreen.pixel_height);
         this.client.MapWindow(wid);
@@ -355,9 +365,16 @@ class Manager {
 
       if (!wrapper) wrapper = ws.getWrapperByCoords(...this.mouse);
       if (!wrapper) wrapper = Wrapper.getById(ws.children[ws.children.length - 1] || ws.children[0]);
-      if (this.split && wrapper.children.length !== 0) wrapper = new Wrapper(ws.id);
+      if (this.split && wrapper.children.length !== 0) {
+        wrapper = new Wrapper();
+        ws.append(wrapper);
+      }
 
-      const win = new Window(wrapper.id, wid);
+
+
+      const win = new Window(wid);
+      wrapper.append(win);
+
       const wmclass = await this.getWinClass(win.id);
 
       if (wmclass.toLowerCase().includes('nautilus')) {
@@ -369,12 +386,12 @@ class Manager {
       this.client.MapWindow(wid);
 
       if (this.brainActive && this.brain) this.client.RaiseWindow(this.brain);
-    } catch (err) { console.log(err); }
+    } catch (err) { console.error(err); }
   }
 
   handleDestroy(wid) {
     if (this.specialWids.includes(wid)) return;
-    console.log('info', `Destroy Request for ${wid}`);
+    console.log(`Destroy Request for ${wid}`);
     const win = Window.getById(wid);
     if (!win) return;
 
@@ -388,18 +405,18 @@ class Manager {
 
   handleEnter(wid) {
     try {
-      console.log('info', `Mouse Enter Notify for ${wid}`);
+      console.log(`Mouse Enter Notify for ${wid}`);
       this.focusedWindow = Window.getById(wid);
       this.client.SetInputFocus(wid);
-    } catch (err) { console.log(err); }
+    } catch (err) { console.error(err); }
   }
 
   handleExit(wid) {
     try {
-      console.log('info', `Mouse Exit Notify for ${wid}`);
+      console.log(`Mouse Exit Notify for ${wid}`);
       this.focusedWindow = null;
       this.client.SetInputFocus(this.xscreen.root);
-    } catch (err) { console.log(err); }
+    } catch (err) { console.error(err); }
   }
 
   moveCurrent(x, y) {
@@ -412,7 +429,7 @@ class Manager {
       win.y -= (this.drag.y - y);
       this.drag = { x, y };
       this.client.MoveWindow(win.id, win.x, win.y);
-    } catch (err) { console.log(err); }
+    } catch (err) { console.error(err); }
   }
 
   resizeCurrent(x, y) {
@@ -427,14 +444,14 @@ class Manager {
       win.w += dx;
       win.h += dy;
       this.drag = { x, y };
-    } catch (err) { console.log(err); }
+    } catch (err) { console.error(err); }
   }
 
   raiseCurrent() {
     if (!this.focusedWindow?.floating) return;
     try {
       this.client.RaiseWindow(this.focusedWindow.id);
-    } catch (err) { console.log(err); }
+    } catch (err) { console.error(err); }
   }
 
   moveCurrentToWS(n) {
@@ -471,9 +488,14 @@ class Manager {
 
       if (ni === null && cwrap.children.length === 1) return;
 
-      const nwrap = ni === null
-        ? new Wrapper(ws.id, 0)
-        : Wrapper.getById(ws.children[ni]);
+      let nwrap;
+      if (ni === null) {
+        nwrap = new Wrapper();
+        ws.append(nwrap, 0);
+      } else {
+        nwrap = Wrapper.getById(ws.children[ni]);
+      }
+
       cwrap?.remove(this.focusedWindow);
       nwrap?.append(this.focusedWindow);
     } else if ((ws.dir === 'ltr' && dir === 's') || (ws.dir === 'ttb' & dir === 'e')) {
@@ -482,9 +504,13 @@ class Manager {
 
       if (ni === null && cwrap.children.length === 1) return;
 
-      const nwrap = ni === null
-        ? new Wrapper(ws.id)
-        : Wrapper.getById(ws.children[ni]);
+      let nwrap;
+      if (ni === null) {
+        nwrap = new Wrapper();
+        ws.append(nwrap);
+      } else {
+        nwrap = Wrapper.getById(ws.children[ni]);
+      }
 
       cwrap?.remove(this.focusedWindow);
       nwrap?.append(this.focusedWindow);
@@ -536,7 +562,7 @@ class Manager {
           case 'EnterNotify': this.handleEnter(wid); break;
           case 'LeaveNotify': this.handleExit(wid); break;
         }
-      } catch (err) { console.log(err); }
+      } catch (err) { console.error(err); }
     });
   }
 
