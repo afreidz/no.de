@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-const { join } = require('path');
-const yargs = require('yargs/yargs');
-const { hideBin } = require('yargs/helpers');
-const IPCClient = require('no.de-ipc/client');
-const { spawn, exec } = require('child_process');
-const { start, stop, } = require('./src/pm2.js');
+import yargs from 'yargs';
+import { join } from 'path';
+import { hideBin } from 'yargs/helpers';
+import { start, stop } from './src/pm2';
+import { spawn, exec } from 'child_process';
+import IPCClient from '@no.de/ipc/src/client';
 
 const uiurls = {
   desktop: 'http://localhost:7000/desktop',
@@ -89,82 +89,49 @@ function list() {
 }
 
 async function stopAll() {
-  // await stop('no.de-ui');
   await stop('no.de-wm');
   await stop('no.de-ipc');
   await stop('no.de-hkd');
-  // await stop('no.de-brain');
-  // await stop('no.de-desktop');
   await stop('no.de-compositor');
 }
 
 async function init() {
-  const wmid = +new Date;
-
-  // await start({
-  //   name: 'no.de-ui',
-  //   script: 'npm start',
-  //   env: { PORT: 7000 },
-  //   cwd: join(__dirname, '../ui'),
-  // });
-
-  await start({
-    name: 'no.de-ipc',
-    script: 'npm start',
-    env: { PORT: 7001 },
-    cwd: join(__dirname, '../ipc'),
-  });
-
+  const base = join(__dirname, '../../build/');
+  
   await start({
     name: 'no.de-wm',
     autorestart: false,
-    script: `startx ${join(__dirname, '../wm/', 'start.sh')} -- :${display}`,
+    cwd: join(base, '../'),
+    script: `startx ${join(base, '../startwm.sh')} -- :${display}`,
+
   });
 
-  // await new Promise(r => setTimeout(r, 1000));
+  await start({
+    name: 'no.de-ipc',
+    env: { PORT: 7001 },
+    cwd: join(base, '/ipc'),
+    script: 'node ./index.js',
+  });
 
-//  await start({
-//    name: 'no.de-compositor',
-//    cwd: join(__dirname, '../'),
-//    env: { DISPLAY: `:${display}` },
-//    script: 'picom --config ./picom --experimental-backends',
-//  });
+  await new Promise(r => setTimeout(r, 1800));
+
+  //await start({
+  //  cwd: join(base, '..'),
+  //  name: 'no.de-compositor',
+  //  env: { DISPLAY: `:${display}` },
+  //  script: 'picom --config ./picom --experimental-backends',
+  //});
 
   await start({
     name: 'no.de-hkd',
+    cwd: join(base, '..'),
     env: { DISPLAY: `:${display}` },
-    cwd: join(__dirname, '../'),
     script: `/usr/bin/sxhkd -c sxhkdrc`,
   });
-
-  // await new Promise(r => setTimeout(r, 500));
-
-  // await start({
-  //   autorestart: false,
-  //   name: 'no.de-desktop',
-  //   env: { DISPLAY: `:${display}` },
-  //   cwd: join(__dirname, '../ui/bin'),
-  //   script: `./webview.cjs --title desktop_${wmid} --type "DESKTOP" --url ${uiurls['desktop']}`
-  // });
-
-  // await new Promise(r => setTimeout(r, 2000));
-
-  // await start({
-  //   autorestart: false,
-  //   name: 'no.de-brain',
-  //   env: { DISPLAY: `:${display}` },
-  //   cwd: join(__dirname, '../ui/bin'),
-  //   script: `./webview.cjs --title brain_${wmid} --url ${uiurls['brain']}`
-  // });
-
-  exec('xsetroot -cursor_name left_ptr');
 }
 
 async function handleWMCMD(cmd) {
   const client = new IPCClient(['wm']);
   const { command, args } = cmd;
   client.send('wm', { msg: 'command', command, args });
-
-  await new Promise(r => setTimeout(r, 1000));
-  client.close();
 }

@@ -1,7 +1,7 @@
 {
   "name": "no.de",
   "bin": {
-    "no.de": "./cli/index.js"
+    "no.de": "./build/cli/index.js"
   },
   "scripts": {
     "test": "npm t -w wm"
@@ -11,5 +11,8 @@
     "ui",
     "ipc",
     "cli"
-  ]
+  ],
+  "dependencies": {
+    "tsx": "^1.0.0"
+  }
 }

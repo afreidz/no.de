@@ -53,8 +53,8 @@ export default class Container {
   #floating?: Boolean;
   isWorkspace: Boolean;
   #fullscreen?: Boolean;
+  #children: Set<Container>;
   screens?: Array<Geography>;
-  #children = new Set<Container>();
 
   constructor(opts: ContainerConstructor = {}) {
     this.ratio = 1;
@@ -65,6 +65,7 @@ export default class Container {
     this.dir = opts.dir || 'ltr';
     this.#geo = opts?.geo || defaultGeo;
     this.id = opts?.id || Cache.size + 1;
+    this.#children = new Set();
 
     Cache.set(this.id, this);
   }
@@ -89,7 +90,6 @@ export default class Container {
     this.#floating = v;
     if (v) {
       const floaters = this.parent.children.filter(c => c.floating);
-      console.log(floaters);
       const offset = 10 * floaters.length;
       this.geo = { x: offset, y: offset, w: 800, h: 600 };
     }
@@ -132,6 +132,11 @@ export default class Container {
     return [...this.#children];
   }
 
+  get descendents(): Array<Container> {
+    if (this.children.length === 0) return [];
+    return this.children.map(c => ([c, c.descendents].flat())).flat();
+  }
+
   get layoutChildren(): Array<Container> {
     return [...this.#children].filter(c => (!c.floating && !c.fullscreen));
   }
@@ -150,6 +155,10 @@ export default class Container {
     if (this.isRoot) return this;
     return this.ancestors.find(a => a.isRoot)
       || Container.getAll().find(c => c.isRoot);
+  }
+
+  update() {
+    layout(this.workspace);
   }
 
   deref() {

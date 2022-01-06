@@ -10,15 +10,14 @@
 
 </script>
 
-<style>
-  @import '$lib/styles';
+<style lang="scss">
+  @use 'sass:map';
+  @use '$lib/styles' as *;
   
-  :root {
-    --nav-width: 500px;
-  }
+  $nav-width: 500px;
 
   @keyframes move {
-    from { left: calc(-1 * var(--nav-width)); }
+    from { left: calc(-1 * $nav-width); }
     to { left: 0; }
   }
 
@@ -26,10 +25,10 @@
     top: 0;
     bottom: 0;
     animation: none;
+    width: $nav-width;
     position: absolute;
-    width: var(--nav-width);
-    left: calc(-1 * var(--nav-width));
-    background: var(--panel-background);
+    left: calc(-1 * $nav-width);
+    background: map.get($theme, 'tokens', 'panel-background');
   }
   
   nav.active {

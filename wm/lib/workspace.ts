@@ -56,6 +56,10 @@ export default class Workspace extends Container {
     return lc.length === 0 ? super.children : lc;
   }
 
+  get children(): Array<Container> {
+    return [...super.children];
+  }
+
   append(c: Section, i?: number) {
     if (
       this.children.length === 0
@@ -80,6 +84,10 @@ export default class Workspace extends Container {
     }
   }
 
+  static getAllActive(): Array<Workspace> {
+    return this.getAll().filter(w => w.active);
+  }
+  
   static getAll(): Array<Workspace> {
     return Container.getByType(Workspace);
   }

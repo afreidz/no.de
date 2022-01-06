@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "rootDir": "./",
+  },
+  "include": [
+    "./ipc/**/*.ts",
+    "./wm/**/*.ts",
+    "./cli/**/*.ts",
+  ],
+  "exclude": [
+    "./wm/lib/adapters/browser.ts"
+  ]
+}

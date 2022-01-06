@@ -17,7 +17,7 @@
   $rem: 10px,
 );
 
-$-panel-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+$-panel-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
 
 $theme: map.merge(default.$theme, 'tokens', (
   'panel-shadow': $-panel-shadow,

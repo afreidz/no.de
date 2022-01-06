@@ -1,14 +1,8 @@
 {
-  "name": "no.de-ipc",
+  "name": "@no.de/ipc",
   "version": "1.0.0",
-  "exports": {
-    "./server": "./src/server.js",
-    "./client": "./src/client.js",
-    "./client-esm": "./src/client.mjs",
-    "./client-browser": "./src/client.mjs"
-  },
   "scripts": {
-    "start": "node ."
+    "start": "node ./index.js"
   },
   "dependencies": {
     "events": "^3.3.0",

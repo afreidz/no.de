@@ -141,8 +141,8 @@
   main {
     height: 100%;
     display: flex;
-    font-size: 8rem;
-    font-weight: 400;
+    font-size: 6rem;
+    font-weight: 200;
     line-height: 10rem;
     align-items: center;
     flex-direction: column;
@@ -163,13 +163,14 @@
   }
 
   i {
-    flex: 0 0 7rem;
+    flex: 0 0 5rem;
     padding-right: map.get($theme, 'spacing', 1);
   }
 
   input {
     width: 0;
     flex: 1 1 auto;
+    font-weight: 300;
     font-size: inherit;
   }
 
