@@ -51,8 +51,10 @@ async function init(): Promise<any> {
   const manager = new Manager(screens, geo);
 
   manager.listen();
-  manager.addWorkspace(0);
-  manager.addWorkspace(1);
+  manager.addWorkspace(0, '1');
+  manager.addWorkspace(0, '2');
+  manager.addWorkspace(1, '3');
+  manager.addWorkspace(1, '4');
 
   console.log('Hello from the xorg adapter of no.de');
 

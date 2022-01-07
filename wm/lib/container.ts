@@ -168,9 +168,9 @@ export default class Container {
 
   append(c: Container, i?: number) {
     c.parent = this;
-    if (i) {
-      const kids = this.children;
-      kids.splice(+i, 0, c);
+    if (i || i === 0) {
+      const kids = [...this.children];
+      kids.splice(i, 0, c);
       this.#children = new Set(kids);
     } else {
       this.#children.add(c);

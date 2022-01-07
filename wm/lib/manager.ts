@@ -5,9 +5,9 @@ import Workspace from './workspace.js';
 import Container, { Gaps, Dir, Geography } from './container.js';
 
 const dir1: Dir = 'ltr';
-const dir2: Dir = dir1 === 'ltr' ? 'ttb' : 'ltr';
-const gaps: Gaps = { t: 10, b: 10, l: 10, r: 10 };
 const strut: Gaps = { t: 40, b: 10, l: 10, r: 10 };
+export const dir2: Dir = dir1 === 'ltr' ? 'ttb' : 'ltr';
+export const gaps: Gaps = { t: 10, b: 10, l: 10, r: 10 };
 
 export type Mouse = {
   x: number,
@@ -149,14 +149,6 @@ export default class Manager {
       win.parent.remove(win);
       win.deref();
     }
-  }
-
-  moveWindowToWorkspace(n) {
-
-  }
-
-  moveWindowWithinWorkspace(dir = '') {
-
   }
 
   setType(wid) {

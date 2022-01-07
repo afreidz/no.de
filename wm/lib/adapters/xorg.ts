@@ -1,9 +1,11 @@
 import * as x11 from 'x11';
 import iohook from 'iohook';
 import Window from '../window';
-import Manager from '../manager';
+import Section from '../section';
+import Workspace from '../workspace';
 import { exec } from 'child_process';
 import IPCClient from '@no.de/ipc/src/client';
+import Manager, { gaps, dir2 } from '../manager';
 import Container, { Geography } from '../container';
 
 const {
@@ -18,6 +20,8 @@ const masks = {
   manager: { eventMask: SubstructureNotify | SubstructureRedirect },
   window: { eventMask: EnterWindow | LeaveWindow },
 }
+
+type Dir = 'n' | 's' | 'e' | 'w';
 
 function xInit(): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -78,6 +82,9 @@ export default class XorgManager extends Manager {
           switch (command) {
             case 'kill': this.kill(); break;
             case 'resize': this.resize(...data.args); break;
+            case 'move-within': this.moveWithinWorkspace(data.args[0]); break;
+            case 'moveto-workspace': this.moveToWorkspace(data.args[0]); break;
+            case 'activate-workspace': this.activateWorkspace(data.args[0]); break;
             case 'exec': 
               if (data.args[1] === 'split') {
                 this.split = true;
@@ -107,14 +114,106 @@ export default class XorgManager extends Manager {
     this.draw(this.active.ws);
   }
 
+  activateWorkspace(name: string | number) {
+    const ws = Workspace.getByName(`${name}`);
+    if (!ws) return;
+    ws.active = true;
+    console.log(`activated ${ws.name}`)
+    this.draw();
+  }
+
+  moveToWorkspace(name: string | number) {
+    const win = this.active.win;
+    const ws = Workspace.getByName(`${name}`);
+    if (!win || !ws) return;
+    const sec = ws.children[ws.children.length-1];
+    win.parent.remove(win);
+    sec.append(win);
+    this.draw();
+  }
+
+  moveWithinWorkspace(dir: Dir) {
+    const win = this.active.win;
+    if (!win) return;
+    
+    let target: Container;
+    let index: number | null;
+
+    if (win.workspace.dir === 'ltr') {
+      switch(dir) {
+        case 'n':
+          target = win.workspace.children[win.workspace.children.indexOf(win.parent) - 1];
+          if (!target) break;
+          index = null;
+        break;
+        case 's':
+          target = win.workspace.children[win.workspace.children.indexOf(win.parent) + 1];
+          if (!target) {
+            const sec = new Section({ dir: dir2, gaps });
+            win.workspace.append(sec);
+            target = sec;
+          }
+          index = null;
+        break;
+        case 'e':
+          target = win.parent;
+          index = win.parent.children.indexOf(win) === win.parent.children.length
+            ? win.parent.children.length
+            : win.parent.children.indexOf(win) + 1;
+        break;
+        case 'w':
+          target = win.parent;
+          index = win.parent.children.indexOf(win) === 0
+            ? 0
+            : win.parent.children.indexOf(win) - 1;
+        break;
+      }
+    } else {
+      switch(dir) {
+        case 'w':
+          target = win.workspace.children[win.workspace.children.indexOf(win.parent) - 1];
+          if (!target) break;
+          index = null;
+        break;
+        case 'e':
+          target = win.workspace.children[win.workspace.children.indexOf(win.parent) + 1];
+          if (!target) {
+            const sec = new Section({ dir: dir2, gaps });
+            win.workspace.append(sec);
+            target = sec;
+          }
+          index = null;
+        break;
+        case 's':
+          target = win.parent;
+          index = win.parent.children.indexOf(win) === win.parent.children.length
+            ? win.parent.children.length
+            : win.parent.children.indexOf(win) + 1;
+        break;
+        case 'n':
+          target = win.parent;
+          index = win.parent.children.indexOf(win) === 0
+            ? 0
+            : win.parent.children.indexOf(win) - 1;
+        break;
+      }
+    }
+    if (!target) return;
+    win.parent.remove(win);
+    target.append(win, index);
+    this.draw(win.workspace);
+  }
+
   handleEnter(id: number) {
     const client = XorgManager.client;
     client.ChangeWindowAttributes(id, { borderPixel: 0x7f39fb });
+    client.SetInputFocus(id);
   }
 
   handleLeave(id: number) {
     const client = XorgManager.client;
     client.ChangeWindowAttributes(id, { borderPixel: 0x0e1018 });
+    client.SetInputFocus(XorgManager.xscreen.root);
   }
 
   handleMap(id: number) {
@@ -150,7 +249,6 @@ export default class XorgManager extends Manager {
     const client = XorgManager.client;
 
     windows.forEach(win => {
-      console.log('Drawing wid', win.id);
       if (!win.workspace.active) {
         client.UnmapWindow(win.id);
         win.mapped = false;

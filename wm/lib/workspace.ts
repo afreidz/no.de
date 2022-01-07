@@ -67,7 +67,7 @@ export default class Workspace extends Container {
     ) {
       super.append(c, i);
     } else {
-      throw new Error('not every section has a child');
+      console.error('not every section has a child');
     }
   }
 
@@ -77,7 +77,7 @@ export default class Workspace extends Container {
 
   remove(c: Section) {
     if (this.children.length <= 1) {
-      throw new Error('workspace must have 1 section');
+      console.error('workspace must have 1 section');
     } else {
       super.remove(c);
       c.deref();
@@ -89,16 +89,16 @@ export default class Workspace extends Container {
   }
   
   static getAll(): Array<Workspace> {
-    return Container.getByType(Workspace);
+    return Container.getByType(this);
   }
 
   static getAllOnScreen(s: Geography): Array<Workspace> {
-    return Workspace.getAll().filter(ws => ws.screen === s);
+    return this.getAll().filter(ws => ws.screen === s);
   }
 
   static getByCoords(c: Coord): Workspace {
     const { x, y } = c;
-    return Workspace.getAll().find(c => {
+    return this.getAll().find(c => {
       const geo = c.screen;
       return c.active
         && x >= geo.x
@@ -106,5 +106,9 @@ export default class Workspace extends Container {
         && y >= geo.y
         && y <= (geo.y + geo.h);
     });
+  }
+
+  static getByName(name: string): Workspace {
+    return this.getAll().find(w => w.name == name);
   }
 }
