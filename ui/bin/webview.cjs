@@ -7,27 +7,31 @@ const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const { argv } = yargs(hideBin(process.argv));
 
-const priority = gtk.STYLE_PROVIDER_PRIORITY_APPLICATION;
-const title = argv.title || `webview_${+new Date}`;
-const styles = new gtk.CssProvider();
-const url = argv.url;
+setTimeout(start, 2000);
 
-gi.startLoop();
-gtk.init();
+function start() {
+  const priority = gtk.STYLE_PROVIDER_PRIORITY_APPLICATION;
+  const title = argv.title || `webview_${+new Date}`;
+  const styles = new gtk.CssProvider();
+  const url = argv.url;
 
-const win = new gtk.Window({ title });
+  gi.startLoop();
+  gtk.init();
 
-const screen = win.getScreen();
-const visual = screen.getRgbaVisual();
-const rgba = new gdk.RGBA({ red: 0, green: 0, blue: 0, alpha: 0 });
+  const win = new gtk.Window({ title });
 
-const web = new webkit.WebView();
-web.loadUri(url);
-web.setBackgroundColor(rgba);
-web.overrideBackgroundColor(0, rgba);
+  const screen = win.getScreen();
+  const visual = screen.getRgbaVisual();
+  const rgba = new gdk.RGBA({ red: 0, green: 0, blue: 0, alpha: 0 });
 
-win.setVisual(visual);
-win.add(web);
-win.on('show', () => gtk.main());
-win.on('destroy', gtk.mainQuit);
-win.showAll();
+  const web = new webkit.WebView();
+  web.loadUri(url);
+  web.setBackgroundColor(rgba);
+  web.overrideBackgroundColor(0, rgba);
+
+  win.setVisual(visual);
+  win.add(web);
+  win.on('show', () => gtk.main());
+  win.on('destroy', gtk.mainQuit);
+  win.showAll();
+}

@@ -8,6 +8,7 @@ export type Coord = {
 };
 
 export type Geography = {
+  i?: number,
   x: number,
   y: number,
   w: number,
@@ -72,7 +73,7 @@ export default class Container {
 
   get geo(): Geography {
     if (this.fullscreen) {
-      return this.root.geo;
+      return this.workspace.screen;
     } else {
       return this.#geo;
     }
@@ -132,6 +133,12 @@ export default class Container {
     return [...this.#children];
   }
 
+  get next(): Container {
+    const all = Container.getAll();
+    const ci = all.indexOf(this);
+    return all[(ci+1)%all.length];
+  }
+
   get descendents(): Array<Container> {
     if (this.children.length === 0) return [];
     return this.children.map(c => ([c, c.descendents].flat())).flat();
@@ -155,6 +162,16 @@ export default class Container {
     if (this.isRoot) return this;
     return this.ancestors.find(a => a.isRoot)
       || Container.getAll().find(c => c.isRoot);
+  }
+
+  serialize() {
+    return {
+      id: this.id,
+      dir: this.dir,
+      name: this.name,
+      active: this.active,
+      screen: this.screen?.i,
+    }
   }
 
   update() {

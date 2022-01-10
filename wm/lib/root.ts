@@ -1,5 +1,5 @@
-import Workspace from './workspace.js';
-import Container, { ContainerConstructor, Geography } from './container.js';
+import Workspace from './workspace';
+import Container, { ContainerConstructor, Geography } from './container';
 
 interface RootConstructor extends ContainerConstructor {
   screens: Array<Geography>,

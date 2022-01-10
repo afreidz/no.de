@@ -1,6 +1,6 @@
-import Root from './root.js';
-import Section from './section.js';
-import Container, { ContainerConstructor, Geography, Gaps, Coord } from './container.js';
+import Root from './root';
+import Section from './section';
+import Container, { ContainerConstructor, Geography, Gaps, Coord } from './container';
 
 interface WorkspaceConstructor extends ContainerConstructor {
   strut?: Gaps,
@@ -49,6 +49,12 @@ export default class Workspace extends Container {
         if (ws !== this) ws.active = false;
       });
     }
+  }
+
+  get next() {
+    const all = Workspace.getAllOnScreen(this.screen);
+    const ci = all.indexOf(this);
+    return all[(ci+1)%all.length];
   }
 
   get layoutChildren(): Array<Container> {

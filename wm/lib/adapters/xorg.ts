@@ -36,12 +36,15 @@ export default class XorgManager extends Manager {
   static client: any;
   static display: any;
   static xscreen: any;
- 
+  static ipc: any;
+  desktop: number;
+
   static async setup() {
     const xd = await xInit();
     this.display = xd;
     this.client = xd.client;
     this.xscreen = xd.screen[0];
+    this.ipc = new IPCClient(['wm']);
   }
 
   constructor(screens: Array<Geography>, geo: Geography) {
@@ -49,7 +52,7 @@ export default class XorgManager extends Manager {
   }
 
   listen() {
-    const ipc = new IPCClient(['wm']);
+    const ipc = XorgManager.ipc; 
     const client = XorgManager.client;
     const root = XorgManager.xscreen.root;
 
@@ -82,6 +85,8 @@ export default class XorgManager extends Manager {
           switch (command) {
             case 'kill': this.kill(); break;
             case 'resize': this.resize(...data.args); break;
+            case 'cycle-workspace': this.cycleWorkspace(); break;
+            case 'toggle-fullscreen': this.toggleFullscreenWin(); break;
             case 'move-within': this.moveWithinWorkspace(data.args[0]); break;
             case 'moveto-workspace': this.moveToWorkspace(data.args[0]); break;
             case 'activate-workspace': this.activateWorkspace(data.args[0]); break;
@@ -95,8 +100,22 @@ export default class XorgManager extends Manager {
             break;
           }
         break;
+        case 'query':
+          const { type } = data;
+          switch (type) {
+            case 'workspaces': this.sendUpdate(); break; 
+               
+            break;
+          }
+        break; 
       }
     });
+  }
+
+  sendUpdate(){
+    const ipc = XorgManager.ipc;
+    const workspaces = Workspace.getAll().map(ws => ws.serialize());
+    ipc.send('wm', { message: 'workspaces', workspaces });
   }
 
   run(cmd: string) {
@@ -114,12 +133,30 @@ export default class XorgManager extends Manager {
     this.draw(this.active.ws);
   }
 
-  activateWorkspace(name: string | number) {
+  activateWorkspace(name: String | number) {
     const ws = Workspace.getByName(`${name}`);
     if (!ws) return;
     ws.active = true;
-    console.log(`activated ${ws.name}`)
     this.draw();
+    this.sendUpdate();
+  }
+
+  cycleWorkspace() {
+    if (!this.active?.ws) return;
+    this.activateWorkspace(this.active.ws.next.name);
+  }
+
+  toggleFullscreenWin(win?: Window) {
+    const target = win || this.active.win;
+    if (!target) return;
+    
+    const client = XorgManager.client;
+    super.toggleFullscreenWin(target);
+    this.draw();
+    client.RaiseWindow(target.id);
+
+    const borderWidth = target.fullscreen ? 0 : 1;
+    client.ConfigureWindow(target.id, { borderWidth });
   }
 
   moveToWorkspace(name: string | number) {
@@ -216,9 +253,14 @@ export default class XorgManager extends Manager {
     client.SetInputFocus(XorgManager.xscreen.root);
   }
 
-  handleMap(id: number) {
+  async handleMap(id: number) {
     if(!!Window.getById(id)) return console.log('ID',id,'exists');
-    this.createWindow(id);
+    const name = await this.getWinName(id);
+    if (name === 'no.de-desktop') {
+      this.createDesktop(id);
+    } else {
+      this.createWindow(id);
+    }
   }
 
   handleDestroy(id: number) {
@@ -226,22 +268,49 @@ export default class XorgManager extends Manager {
     if (!win) return;
     this.destroyWindow(win);
   }
+
+  createDesktop(wid: number) {
+    this.desktop = wid;
+    const client = XorgManager.client;
+    const { x, y, w: width, h: height } = this.root.geo;
+    client.ConfigureWindow(wid, { x, y, width, height});
+    client.MapWindow(wid);
+    client.LowerWindow(wid);
+  }
   
   createWindow(wid: number) {
     super.createWindow(wid, this.split);
 
     const client = XorgManager.client;
-    client.ConfigureWindow(wid, { borderWidth: 2 });
+    client.ConfigureWindow(wid, { borderWidth: 1 });
     client.ChangeWindowAttributes(wid, { borderPixel: 0x0e1018, ...masks.window });
     this.draw(Window.getById(wid).workspace);
     this.split = false;
   }
 
   destroyWindow(win: Window){
+    if (win.id === this.desktop) return;
     console.log('Destroy', win.id);
     const ws = win.workspace;
     super.destroyWindow(win);
     this.draw(ws);
+  }
+
+  getWinName(wid: number): Promise<string| null> {
+    const client = XorgManager.client;
+    const { WM_NAME, STRING} = client.atoms;
+
+    return new Promise(r => {
+      client.GetProperty(0, wid, WM_NAME, STRING, 0, 10000000, (err, prop) => {
+        if (err) {
+          console.error(err);
+          r(null);
+        } else {
+          const val = prop.data.toString();
+          r(val);
+        } 
+      })
+    });
   }
 
   draw(node?: Container) {

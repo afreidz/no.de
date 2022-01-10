@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env ts-node
 import * as x11 from 'x11';
 import Manager from './lib/adapters/xorg';
 
@@ -56,6 +56,6 @@ async function init(): Promise<any> {
   manager.addWorkspace(1, '3');
   manager.addWorkspace(1, '4');
 
-  console.log('Hello from the xorg adapter of no.de');
+  console.log(`Hello from the xorg adapter of no.de running on Display: ${process.env.DISPLAY}`);
 
 })();

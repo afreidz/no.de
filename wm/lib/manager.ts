@@ -1,8 +1,8 @@
-import Root from './root.js';
-import Window from './window.js';
-import Section from './section.js';
-import Workspace from './workspace.js';
-import Container, { Gaps, Dir, Geography } from './container.js';
+import Root from './root';
+import Window from './window';
+import Section from './section';
+import Workspace from './workspace';
+import Container, { Gaps, Dir, Geography } from './container';
 
 const dir1: Dir = 'ltr';
 const strut: Gaps = { t: 40, b: 10, l: 10, r: 10 };
@@ -45,7 +45,6 @@ export default class Manager {
     }
   }
 
-
   draw() {
     //noop: use adapters
   }
@@ -55,10 +54,6 @@ export default class Manager {
     const sc = new Section({ dir: dir2, gaps });
     this.root.append(ws);
     ws.append(sc);
-  }
-
-  cycleWorkspace() {
-
   }
 
   run(cmd) {
@@ -84,13 +79,13 @@ export default class Manager {
   }
 
   toggleFloatWin(win: Window) {
-    const target = win || this.activeWin;
+    const target = win || this.active.win;
     if (!target) throw new Error('no window to float');
     target.floating = !target.floating;
   }
 
-  toggleFullscreenWin(win: Window) {
-    const target = win || this.activeWin;
+  toggleFullscreenWin(win?: Window) {
+    const target = win || this.active.win;
     if (!target) throw new Error('no window to fullscreen');
     target.fullscreen = !target.fullscreen;
   }
@@ -105,17 +100,6 @@ export default class Manager {
 
   flipDir(ws: Workspace) {
 
-  }
-
-  getWinName(wid) {
-    // const { WM_NAME, STRING } = this.client.atoms;
-    // return new Promise(r => {
-    //   this.client.GetProperty(0, wid, WM_NAME, STRING, 0, 10000000, (err, prop) => {
-    //     if (err) return console.error(err);
-    //     const val = prop.data.toString();
-    //     r(val);
-    //   });
-    // });
   }
 
   getWinClass(wid) {

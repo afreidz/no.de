@@ -89,12 +89,12 @@ function list() {
 }
 
 async function stopAll() {
-  // await stop('no.de-ui');
+  await stop('no.de-ui');
   await stop('no.de-wm');
   await stop('no.de-ipc');
   await stop('no.de-hkd');
-  // await stop('no.de-brain');
-  // await stop('no.de-desktop');
+  await stop('no.de-brain');
+  await stop('no.de-desktop');
   await stop('no.de-compositor');
 }
 
@@ -118,7 +118,7 @@ async function init() {
   await start({
     name: 'no.de-wm',
     autorestart: false,
-    script: `startx ${join(__dirname, '../wm/', 'start.sh')} -- :${display}`,
+    script: `startx ${join(__dirname, '../wm/', 'index.ts')} -- :${display}`,
   });
 
   // await new Promise(r => setTimeout(r, 1000));
