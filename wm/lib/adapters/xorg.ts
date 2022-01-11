@@ -58,7 +58,33 @@ export default class XorgManager extends Manager {
 
     client.ChangeWindowAttributes(root, masks.manager); 
 
-    iohook.on('mousemove', e => (this.mouse = { x: e.x , y: e.y }));
+    iohook.on('mousedown', e => (this.drag = { x: e.x, y: e.y }));
+    iohook.on('mouseup', e => (this.drag = null));
+
+    iohook.on('mousedrag', e => {
+      if (this.active.win?.floating) {
+        const x = this.active.win.geo.x - (this.drag.x - e.x); 
+        const y = this.active.win.geo.y - (this.drag.y - e.y);
+        const w = this.active.win.geo.w;
+        const h = this.active.win.geo.h;
+        this.drag = { x: e.x, y: e.y };
+        this.active.win.geo = {x,y,w,h};
+        client.MoveWindow(this.active.win.id, x,y);
+      }
+    })
+    
+    iohook.on('mousemove', e => {
+      this.mouse = { x: e.x , y: e.y };
+    });
+
+    iohook.on('mouseclick', e => {
+      if (e.clicks === 2) {
+        this.toggleFloatWin(this.active.win);
+      } else if (this.active?.win) {
+        client.RaiseWindow(this.active.win.id);
+      }
+    });
+
     iohook.start();
 
     client.on('event', e => {
@@ -84,6 +110,7 @@ export default class XorgManager extends Manager {
           const { command } = data;
           switch (command) {
             case 'kill': this.kill(); break;
+            case 'flip': this.flipDir(); break;
             case 'resize': this.resize(...data.args); break;
             case 'cycle-workspace': this.cycleWorkspace(); break;
             case 'toggle-fullscreen': this.toggleFullscreenWin(); break;
@@ -133,6 +160,12 @@ export default class XorgManager extends Manager {
     this.draw(this.active.ws);
   }
 
+  flipDir(ws?: Workspace) {
+    super.flipDir(ws);
+    this.draw(ws);
+    this.sendUpdate();
+  }
+
   activateWorkspace(name: String | number) {
     const ws = Workspace.getByName(`${name}`);
     if (!ws) return;
@@ -144,6 +177,16 @@ export default class XorgManager extends Manager {
   cycleWorkspace() {
     if (!this.active?.ws) return;
     this.activateWorkspace(this.active.ws.next.name);
+  }
+
+  toggleFloatWin(win: Window): void {
+    const target = win || this.active.win;
+    if (!target) return;
+
+    const client = XorgManager.client;
+    super.toggleFloatWin(target);
+    this.draw();
+    if (!target.floating) client.LowerWindow(target.id);
   }
 
   toggleFullscreenWin(win?: Window) {
@@ -245,12 +288,14 @@ export default class XorgManager extends Manager {
     const client = XorgManager.client;
     client.ChangeWindowAttributes(id, { borderPixel: 0x7f39fb });
     client.SetInputFocus(id);
+    this.activeWin = Window.getById(id);
   }
 
   handleLeave(id: number) {
     const client = XorgManager.client;
     client.ChangeWindowAttributes(id, { borderPixel: 0x0e1018 });
     client.SetInputFocus(XorgManager.xscreen.root);
+    this.activeWin = null;
   }
 
   async handleMap(id: number) {

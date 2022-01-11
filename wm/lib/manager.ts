@@ -32,7 +32,7 @@ export default class Manager {
   }
   
   get active() {
-    const win: Window = Window.getByCoords(this.mouse);
+    const win: Window = this.activeWin || Window.getByCoords(this.mouse);
     const ws: Workspace = win?.workspace
       || Workspace.getByCoords(this.mouse)
       || Workspace.getAll().find(ws => ws.active);
@@ -98,8 +98,12 @@ export default class Manager {
 
   }
 
-  flipDir(ws: Workspace) {
-
+  flipDir(ws?: Workspace) {
+    const target = ws || this.active.ws;
+    if (!target) throw new Error('no workspace to flip');
+    target.dir = target.dir === 'ltr' ? 'ttb' : 'ltr';
+    target.children.forEach(c => (c.dir = target.dir === 'ttb' ? 'ltr' : 'ttb'));
+    target.update();
   }
 
   getWinClass(wid) {

@@ -91,8 +91,9 @@ export default class Container {
     this.#floating = v;
     if (v) {
       const floaters = this.parent.children.filter(c => c.floating);
-      const offset = 10 * floaters.length;
-      this.geo = { x: offset, y: offset, w: 800, h: 600 };
+      const ox = this.workspace.geo.x + (10 * floaters.length);
+      const oy = this.workspace.geo.y + (10 * floaters.length);
+      this.geo = { x: ox, y: oy, w: 800, h: 600 };
     }
     if (!this.isRoot) layout(this.workspace);
   }

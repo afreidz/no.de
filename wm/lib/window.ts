@@ -27,7 +27,7 @@ export default class Window extends Container {
 
   static getByCoords(c: Coord): Window {
     const { x, y } = c;
-    const all = this.getAll().filter(w => {
+     return this.getAll().find(w => {
       const geo = w.geo;
       return w.workspace.active
         && x >= geo.x
@@ -35,6 +35,5 @@ export default class Window extends Container {
         && y >= geo.y
         && y <= (geo.y + geo.h);
     });
-    return all.find(w => w.fullscreen) || all[0];
   }
 }
