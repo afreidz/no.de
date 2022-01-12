@@ -1,68 +1,60 @@
 <section>
-  <div class="screen">
-    <Group>
-      <Item>
-        {#each left as ws, i}
-          <small class="ws ws_{i} ws_left" class:active={ws.active}>{#if ws.active}⬢{:else}⬡{/if}</small>
-        {/each}
-      </Item>
-      <Item remBefore={1}>
-        <small><LayoutIcon split={$split} dir={left.find(ws => ws.active)?.dir}/></small>
-      </Item>
-    </Group>
-    <Group>
-      <Item><small class="active clock"><ClockIcon/> <span>{formattedTime}</span></small></Item>
-    </Group>
-  </div>
-  <div class="screen">
-    <Group>
-      <Item>
-        {#each right as ws, i}
-          <small class="ws ws_{i} ws_right" class:active={ws.active}>{#if ws.active}⬢{:else}⬡{/if}</small>
-        {/each}
-      </Item>
-      <Item remBefore={1}>
-        <small><LayoutIcon split={$split} dir={right.find(ws => ws.active)?.dir}/></small>
-      </Item>
-    </Group>
-    <Group>
-      <Item><small class="clock active"><ClockIcon/> <span>{formattedTime}</span></small></Item>
-    </Group>
-  </div>
+  {#each $screens as screen, a}
+    <div class="screen">
+      <Group>
+        <Item>
+          {#each $ws.filter(ws => (ws.screen == screen.i)) as ws, b}
+            <small class="ws ws_screen_{temp.indexOf(ws)+1}" class:active={ws.active}>{#if ws.active}⬢{:else}⬡{/if}</small>
+          {/each}
+        </Item>
+        <Item remBefore={1}>
+          <small><LayoutIcon fill={color.gray['1']} dir={$ws.find(ws => (ws.screen === screen.i && ws.active))?.dir}/></small>
+        </Item>
+      </Group>
+      <Group>
+        <Item><small class="active clock"><ClockIcon color={color.black['4']}/> <span>{formattedTime}</span></small></Item>
+      </Group>
+    </div>
+  {/each}
 </section>
 
 <script>
-  import ws from '$lib/stores/wm';
   import Item from './item.svelte';
   import Group from './group.svelte';
-  import split from '$lib/stores/split';
+  import { color } from '$lib/tokens.json';
   import { time } from '$lib/stores/clock';
+  import { screens, ws } from '$lib/stores/wm';
   import ClockIcon from '$lib/icons/clock.svelte';
   import LayoutIcon from '$lib/icons/layout.svelte';
 
+  // for some reason $ws cannot be accessed within a loop 
+  // referencing itself unless this intermediate var is used
+  let temp 
+  $: temp = $ws;
+  
   let formattedTime;
-  let left = [];
-  let right = [];
-
-  $: if ($ws) {
-    left = $ws.filter(ws => ws.screen === 0);
-    right = $ws.filter(ws => ws.screen === 1);
-  }
-
   $: if ($time) formattedTime = $time.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric' });
 </script>
 
 <style lang="scss">
   @use "sass:map";
   @use "$lib/styles" as *;
+ 
+  @each $name, $value in map.get($theme, 'colors', 'highlights') {
+    $i: index(map.get($theme, 'colors', 'highlights'), ($name $value));
 
+    .ws.ws_screen_#{$i}.active {
+      color: $value;
+    }
+  }
+  
   section {
     display: flex;
     align-items: stretch;
+    backdrop-filter: blur(1px);
     justify-content: space-between;
+    background-color: rgba(0,0,0,0.3);
     padding: map.get($theme, 'spacing', 0);
-    box-shadow: map.get($theme, 'tokens', 'panel-shadow');
-    background-color: map.get($theme, 'tokens', 'panel-background');
   }
 
   .screen {
@@ -83,7 +75,7 @@
     display: flex;
     font-weight: bold;
     align-items: center;
-    color: map.get($theme, 'tokens', 'dim-text-color');
+    color: map.get($theme, 'colors', 'black', '3');
 
     &.ws {
       font-size: 1.5rem;
@@ -93,14 +85,7 @@
       }
     }
 
-    @for $i from 0 through 2 {
-      &.ws_left.ws_#{$i}.active {
-        color: map.get($theme, 'colors', 'highlights', ($i + 1));
-      }
-      &.ws_right.ws_#{$i}.active {
-        color: map.get($theme, 'colors', 'highlights', ($i + 4));
-      }
-    }
+    
 
     &.clock {
       font-size: 1rem;

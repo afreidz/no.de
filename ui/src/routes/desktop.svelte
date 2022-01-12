@@ -14,7 +14,7 @@
 <style lang="scss">
   @use "sass:map";
   @use "$lib/styles" as *;
-  @import "$lib/styles/base.css";
+  @import "$lib/styles/base/index.css";
 
   :global(body) {
     overflow: hidden;

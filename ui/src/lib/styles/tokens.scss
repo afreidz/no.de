@@ -1,0 +1,63 @@
+
+/**
+ * Do not edit directly
+ * Generated on Wed, 12 Jan 2022 20:42:28 GMT
+ */
+
+$color-black-0: #131020 !default;
+$color-black-1: #1a1823 !default;
+$color-black-2: #1e1d2f !default;
+$color-black-3: #302d41 !default;
+$color-black-4: #575268 !default;
+$color-highlights-rosewater: #f5e0dc !default;
+$color-highlights-flamingo: #f2cdcd !default;
+$color-highlights-mauve: #ddb6f2 !default;
+$color-highlights-pink: #f5c2e7 !default;
+$color-highlights-maroon: #e8a2af !default;
+$color-highlights-red: #f28fad !default;
+$color-highlights-peach: #f8bd96 !default;
+$color-highlights-yellow: #fae3b0 !default;
+$color-highlights-green: #abe9b3 !default;
+$color-highlights-teal: #b5e8e0 !default;
+$color-highlights-blue: #96cdfb !default;
+$color-highlights-sky: #89dceb !default;
+$color-highlights-lavender: #c9cbff !default;
+$color-gray-0: #6e6c7e !default;
+$color-gray-1: #988ba2 !default;
+$color-gray-3: #c3bac6 !default;
+$color-white-0: #d9e0ee !default;
+
+$tokens: (
+  'color': (
+    'black': (
+      '0': $color-black-0,
+      '1': $color-black-1,
+      '2': $color-black-2,
+      '3': $color-black-3,
+      '4': $color-black-4
+    ),
+    'highlights': (
+      'rosewater': $color-highlights-rosewater,
+      'flamingo': $color-highlights-flamingo,
+      'mauve': $color-highlights-mauve,
+      'pink': $color-highlights-pink,
+      'maroon': $color-highlights-maroon,
+      'red': $color-highlights-red,
+      'peach': $color-highlights-peach,
+      'yellow': $color-highlights-yellow,
+      'green': $color-highlights-green,
+      'teal': $color-highlights-teal,
+      'blue': $color-highlights-blue,
+      'sky': $color-highlights-sky,
+      'lavender': $color-highlights-lavender
+    ),
+    'gray': (
+      '0': $color-gray-0,
+      '1': $color-gray-1,
+      '3': $color-gray-3
+    ),
+    'white': (
+      '0': $color-white-0
+    )
+  )
+);

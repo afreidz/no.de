@@ -27,18 +27,18 @@
   @use "$lib/styles" as *;
 
   path {
-    stroke-width: 1.2;
+    stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
 
-  .wall { background-color: map.get($theme, 'tokens', 'root-background'); }
-  .poly-1 { fill: none; stroke: map.get($theme, 'colors', 'highlights', 1); }
-  .poly-2 { fill: none; stroke: map.get($theme, 'colors', 'highlights', 2); }
-  .poly-3 { fill: none; stroke: map.get($theme, 'colors', 'highlights', 3); }
-  .poly-4 { fill: none; stroke: map.get($theme, 'colors', 'highlights', 4); }
-  .poly-5 { fill: none; stroke: map.get($theme, 'colors', 'highlights', 5); }
-  .poly-6 { fill: none; stroke: map.get($theme, 'colors', 'highlights', 6); }
-  .poly-7 { fill: none; stroke: map.get($theme, 'colors', 'highlights', 7); }
-  .poly-8 { fill: none; stroke: map.get($theme, 'colors', 'highlights', 8); }
+  .wall { background-color: map.get($theme, 'colors', 'black', '1'); }
+  .poly-1 { fill: none; stroke: map.get($theme, 'colors', 'black', '2'); }
+  .poly-2 { fill: none; stroke: map.get($theme, 'colors', 'black', '2'); }
+  .poly-3 { fill: none; stroke: map.get($theme, 'colors', 'black', '2'); }
+  .poly-4 { fill: none; stroke: map.get($theme, 'colors', 'black', '2'); }
+  .poly-5 { fill: none; stroke: map.get($theme, 'colors', 'black', '2'); }
+  .poly-6 { fill: none; stroke: map.get($theme, 'colors', 'black', '2'); }
+  .poly-7 { fill: none; stroke: map.get($theme, 'colors', 'black', '2'); }
+  .poly-8 { fill: none; stroke: map.get($theme, 'colors', 'black', '2'); }
 </style>

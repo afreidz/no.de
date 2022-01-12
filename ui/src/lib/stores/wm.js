@@ -1,12 +1,15 @@
 import { ipc } from '$lib/socket';
 import { writable } from 'svelte/store';
 
-const ws = writable([]);
+export const ws = writable([]);
+export const screens = writable([]);
 
 ipc.on('wm', data => {
-  ws.update(() => (data.workspaces));
+  if (data.msg === 'update') {
+    ws.update(() => (data.workspaces));
+    screens.update(() => (data.screens));
+  }
 });
 
-ipc.send('wm', { msg: 'query', type: 'workspaces' });
+ipc.send('wm', { msg: 'query' });
 
-export default ws;
