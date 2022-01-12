@@ -11,6 +11,7 @@ const uiurls = {
 module.exports = {
   apps: [{
     name: 'ui',
+    namespace: ns,
     env: { PORT: 7000 },
     script: `npm start`,
     cwd: join(base, 'ui'),
@@ -27,14 +28,21 @@ module.exports = {
   }, {
     name: 'hkd',
     namespace: ns,
-    restart_delay: 2000,
+    restart_delay: 4000,
     env: { DISPLAY: `:${display}` },
     script: `/usr/bin/sxhkd -c ${join(base, 'sxhkdrc')}`
   }, {
     namespace: ns,
     name: 'desktop',
-    restart_delay: 2000,
+    restart_delay: 1000,
     env: { DISPLAY: `:${display}`},
     script: `${join(base, 'ui/bin', 'webview.cjs')} --title ${ns}-desktop --type "DESKTOP" --url ${uiurls.desktop}`
+  }, {
+    cwd: base,
+    namespace: ns,
+    name: 'compositor',
+    restart_delay: 4000,
+    env: { DISPLAY: `:${display}` },
+    script: 'picom --config ./picom --experimental-backends',
   }]
 }

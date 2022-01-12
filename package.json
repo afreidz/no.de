@@ -3,6 +3,9 @@
   "bin": {
     "no.de": "./cli/index.mjs"
   },
+  "scripts": {
+    "generate-tokens": "style-dictionary build -c ./style-dictionary-config.json"
+  },
   "workspaces": [
     "wm",
     "ui",
@@ -12,5 +15,8 @@
   "dependencies": {
     "ts-node": "^10.4.0",
     "tsx": "^1.0.0"
+  },
+  "devDependencies": {
+    "style-dictionary": "^3.1.1"
   }
 }

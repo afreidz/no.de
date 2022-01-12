@@ -1,0 +1,21 @@
+{
+  "source": ["./tokens.json"],
+  "platforms": {
+    "scss": {
+      "transformGroup": "scss",
+      "buildPath": "./ui/src/lib/styles/",
+      "files": [{
+        "destination": "tokens.scss",
+        "format": "scss/map-deep"
+      }]
+    },
+    "ui/js": {
+      "transformGroup": "js",
+      "buildPath": "./ui/src/lib/",
+      "files": [{
+        "destination": "tokens.json",
+        "format": "json/nested"
+      }]
+    }
+  }
+}

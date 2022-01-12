@@ -127,14 +127,7 @@ export default class XorgManager extends Manager {
             break;
           }
         break;
-        case 'query':
-          const { type } = data;
-          switch (type) {
-            case 'workspaces': this.sendUpdate(); break; 
-               
-            break;
-          }
-        break; 
+        case 'query': this.sendUpdate(); break; 
       }
     });
   }
@@ -142,7 +135,7 @@ export default class XorgManager extends Manager {
   sendUpdate(){
     const ipc = XorgManager.ipc;
     const workspaces = Workspace.getAll().map(ws => ws.serialize());
-    ipc.send('wm', { message: 'workspaces', workspaces });
+    ipc.send('wm', { msg: 'update', workspaces, screens: this.root.screens });
   }
 
   run(cmd: string) {
@@ -186,7 +179,6 @@ export default class XorgManager extends Manager {
     const client = XorgManager.client;
     super.toggleFloatWin(target);
     this.draw();
-    if (!target.floating) client.LowerWindow(target.id);
   }
 
   toggleFullscreenWin(win?: Window) {
