@@ -20,11 +20,15 @@ export default class Manager {
   root: Root;
   drag: Mouse;
   mouse: Mouse;
+  ctrl: Boolean;
+  meta: Boolean;
   split: Boolean;
   activeWin: Window | null;
 
   constructor(screens: Array<Geography>, geo: Geography) {
     this.drag = null;
+    this.meta = false;
+    this.ctrl = false;
     this.split = false;
     this.activeWin = null;
     this.mouse = { x: 0, y: 0 };

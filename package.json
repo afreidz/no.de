@@ -4,7 +4,7 @@
     "no.de": "./cli/index.mjs"
   },
   "scripts": {
-    "generate-tokens": "style-dictionary build -c ./style-dictionary-config.json"
+    "generate-tokens": "style-dictionary build -c ./sdconfig.json"
   },
   "workspaces": [
     "wm",

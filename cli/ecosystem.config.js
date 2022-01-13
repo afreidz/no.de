@@ -44,5 +44,11 @@ module.exports = {
     restart_delay: 4000,
     env: { DISPLAY: `:${display}` },
     script: 'picom --config ./picom --experimental-backends',
+  }, {
+    namespace: ns,
+    name: 'cursor',
+    autorestart: false,
+    env: { DISPLAY: `:${display}` },
+    script: 'xsetroot -cursor_name left_ptr',
   }]
 }

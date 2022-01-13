@@ -1,12 +1,13 @@
 import * as x11 from 'x11';
-import iohook from 'iohook';
-import Window from '../window';
-import Section from '../section';
-import Workspace from '../workspace';
+import input from './input';
+import Window from '../../window';
+import tokens from '../../tokens'; 
+import Section from '../../section';
+import Workspace from '../../workspace';
 import { exec } from 'child_process';
 import IPCClient from '@no.de/ipc/src/client';
-import Manager, { gaps, dir2 } from '../manager';
-import Container, { Geography } from '../container';
+import Manager, { gaps, dir2 } from '../../manager';
+import Container, { Geography } from '../../container';
 
 const {
   EnterWindow,
@@ -33,18 +34,22 @@ function xInit(): Promise<any> {
 }
 
 export default class XorgManager extends Manager {
+  static ipc: any;
   static client: any;
   static display: any;
   static xscreen: any;
-  static ipc: any;
+  static borderColor1: any;
+  static borderColor2: any;
   desktop: number;
-
+  
   static async setup() {
     const xd = await xInit();
     this.display = xd;
     this.client = xd.client;
     this.xscreen = xd.screen[0];
     this.ipc = new IPCClient(['wm']);
+    this.borderColor1 = tokens.color.black['0'].value.replace('#','0x');
+    this.borderColor2 = tokens.color.highlights.blue.value.replace('#','0x');
   }
 
   constructor(screens: Array<Geography>, geo: Geography) {
@@ -57,35 +62,32 @@ export default class XorgManager extends Manager {
     const root = XorgManager.xscreen.root;
 
     client.ChangeWindowAttributes(root, masks.manager); 
-
-    iohook.on('mousedown', e => (this.drag = { x: e.x, y: e.y }));
-    iohook.on('mouseup', e => (this.drag = null));
-
-    iohook.on('mousedrag', e => {
-      if (this.active.win?.floating) {
-        const x = this.active.win.geo.x - (this.drag.x - e.x); 
-        const y = this.active.win.geo.y - (this.drag.y - e.y);
-        const w = this.active.win.geo.w;
-        const h = this.active.win.geo.h;
-        this.drag = { x: e.x, y: e.y };
-        this.active.win.geo = {x,y,w,h};
-        client.MoveWindow(this.active.win.id, x,y);
-      }
-    })
     
-    iohook.on('mousemove', e => {
-      this.mouse = { x: e.x , y: e.y };
+    const inputListener = input();
+    inputListener.on('drag', drag => (this.drag = drag));
+    inputListener.on('mouse', mouse => (this.mouse = mouse));
+    inputListener.on('float', () => this.toggleFloatWin(this.active.win));
+    inputListener.on('raise', () => client.RaiseWindow(this.active.win?.id));
+    inputListener.on('move', e => {
+      if (!this.active.win?.floating) return;
+      const x = this.active.win.geo.x - (this.drag.x - e.x); 
+      const y = this.active.win.geo.y - (this.drag.y - e.y);
+      const w = this.active.win.geo.w;
+      const h = this.active.win.geo.h;
+      this.drag = { x: e.x, y: e.y };
+      this.active.win.geo = {x,y,w,h};
+      client.MoveWindow(this.active.win.id, x,y);
     });
-
-    iohook.on('mouseclick', e => {
-      if (e.clicks === 2) {
-        this.toggleFloatWin(this.active.win);
-      } else if (this.active?.win) {
-        client.RaiseWindow(this.active.win.id);
-      }
+    inputListener.on('resize', e => {
+      if (!this.active.win?.floating) return;
+      const x = this.active.win.geo.x; 
+      const y = this.active.win.geo.y;
+      const w = this.active.win.geo.w - (this.drag.x - e.x);
+      const h = this.active.win.geo.h - (this.drag.y - e.y);
+      this.drag = { x: e.x, y: e.y };
+      this.active.win.geo = {x,y,w,h};
+      client.ResizeWindow(this.active.win.id, w,h);
     });
-
-    iohook.start();
 
     client.on('event', e => {
       const { wid, name } = e;
@@ -278,14 +280,14 @@ export default class XorgManager extends Manager {
 
   handleEnter(id: number) {
     const client = XorgManager.client;
-    client.ChangeWindowAttributes(id, { borderPixel: 0x7f39fb });
+    client.ChangeWindowAttributes(id, { borderPixel: XorgManager.borderColor2 });
     client.SetInputFocus(id);
     this.activeWin = Window.getById(id);
   }
 
   handleLeave(id: number) {
     const client = XorgManager.client;
-    client.ChangeWindowAttributes(id, { borderPixel: 0x0e1018 });
+    client.ChangeWindowAttributes(id, { borderPixel: XorgManager.borderColor1 });
     client.SetInputFocus(XorgManager.xscreen.root);
     this.activeWin = null;
   }
@@ -320,7 +322,7 @@ export default class XorgManager extends Manager {
 
     const client = XorgManager.client;
     client.ConfigureWindow(wid, { borderWidth: 1 });
-    client.ChangeWindowAttributes(wid, { borderPixel: 0x0e1018, ...masks.window });
+    client.ChangeWindowAttributes(wid, { borderPixel: XorgManager.borderColor1, ...masks.window });
     this.draw(Window.getById(wid).workspace);
     this.split = false;
   }

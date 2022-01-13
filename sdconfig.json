@@ -16,6 +16,17 @@
         "destination": "tokens.json",
         "format": "json/nested"
       }]
+    },
+    "wm/ts": {
+      "transformGroup": "js",
+      "buildPath": "./wm/lib/",
+      "files": [{
+        "destination": "tokens.js",
+        "format": "javascript/module"
+      },{
+        "destination": "tokens.d.ts",
+        "format": "typescript/module-declarations"
+      }]
     }
   }
 }

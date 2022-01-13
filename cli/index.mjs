@@ -1,6 +1,7 @@
 #!/usr/bin/env zx
 import IPCClient from '@no.de/ipc/src/client.mjs';
 process.env.FORCE_COLOR=3
+process.env.XDG_CURRENT_DESKTOP="no.de"
 
 const ns = 'no.de';
 const cmd = argv._[1] || null;
@@ -37,6 +38,8 @@ async function kill() {
 }
 
 async function init() {
+  await kill();
+  await flush();
   await $`npx pm2 start ${path.join(base, 'cli/ecosystem.config.js')}`;
 }
 
