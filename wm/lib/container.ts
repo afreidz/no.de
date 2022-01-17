@@ -42,7 +42,7 @@ export default class Container {
   id: number;
   gaps: Gaps;
   strut?: Gaps;
-  name?: String;
+  name?: string;
   ratio: number;
   isWin: Boolean;
   #geo: Geography;

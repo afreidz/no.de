@@ -4,7 +4,7 @@ import Container, { ContainerConstructor, Geography, Gaps, Coord } from './conta
 
 interface WorkspaceConstructor extends ContainerConstructor {
   strut?: Gaps,
-  name?: String,
+  name?: string,
   screen: number,
 };
 

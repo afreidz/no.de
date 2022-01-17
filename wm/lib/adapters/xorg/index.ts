@@ -71,24 +71,31 @@ export default class XorgManager extends Manager {
       if (this.active.win?.floating) client.RaiseWindow(this.active.win?.id);
     });
     inputListener.on('move', e => {
-      if (!this.active.win?.floating) return;
-      const x = this.active.win.geo.x - (this.drag.x - e.x); 
-      const y = this.active.win.geo.y - (this.drag.y - e.y);
-      const w = this.active.win.geo.w;
-      const h = this.active.win.geo.h;
+      const target = this.active.win;
+      if (!target?.floating) return;
+      const x = target.geo.x - (this.drag.x - e.x); 
+      const y = target.geo.y - (this.drag.y - e.y);
+      const w = target.geo.w;
+      const h = target.geo.h;
+      target.geo = {x,y,w,h};
       this.drag = { x: e.x, y: e.y };
-      this.active.win.geo = {x,y,w,h};
-      client.MoveWindow(this.active.win.id, x,y);
+      client.MoveWindow(target.id, x,y);
+      const ws = Workspace.getByCoords({ x, y });
+      console.log('WS By coords', ws.id);
+      console.log('Win WS', target.workspace.id);
+      if (target.workspace !== ws) console.log('move', target.id, 'to', ws.id);
+      if (target.workspace !== ws) this.moveToWorkspace(ws.name);
     });
     inputListener.on('resize', e => {
-      if (!this.active.win?.floating) return;
-      const x = this.active.win.geo.x; 
-      const y = this.active.win.geo.y;
-      const w = this.active.win.geo.w - (this.drag.x - e.x);
-      const h = this.active.win.geo.h - (this.drag.y - e.y);
+      const target = this.active.win;
+      if (!target?.floating) return;
+      const x = target.geo.x; 
+      const y = target.geo.y;
+      const w = target.geo.w - (this.drag.x - e.x);
+      const h = target.geo.h - (this.drag.y - e.y);
+      target.geo = {x,y,w,h};
       this.drag = { x: e.x, y: e.y };
-      this.active.win.geo = {x,y,w,h};
-      client.ResizeWindow(this.active.win.id, w,h);
+      client.ResizeWindow(target.id, w,h);
     });
 
     client.on('event', async e => {
@@ -161,7 +168,7 @@ export default class XorgManager extends Manager {
     this.sendUpdate();
   }
 
-  activateWorkspace(name: String | number) {
+  activateWorkspace(name: string | number) {
     const ws = Workspace.getByName(`${name}`);
     if (!ws) return;
     ws.active = true;
@@ -196,13 +203,13 @@ export default class XorgManager extends Manager {
     client.ConfigureWindow(target.id, { borderWidth });
   }
 
-  moveToWorkspace(name: string | number) {
-    const win = this.active.win;
+  moveToWorkspace(name: string | number, win?: Window) {
+    const target = win || this.active.win;
     const ws = Workspace.getByName(`${name}`);
-    if (!win || !ws) return;
+    if (!target || !ws) return;
     const sec = ws.children[ws.children.length-1];
-    win.parent.remove(win);
-    sec.append(win);
+    target.parent.remove(target);
+    sec.append(target);
     this.draw();
   }
 

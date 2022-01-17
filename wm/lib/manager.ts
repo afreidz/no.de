@@ -53,7 +53,7 @@ export default class Manager {
     //noop: use adapters
   }
 
-  addWorkspace(screen: number = 0, name: String | null = null) {
+  addWorkspace(screen: number = 0, name: string | null = null) {
     const ws = new Workspace({ dir: dir1, screen, strut, name });
     const sc = new Section({ dir: dir2, gaps });
     this.root.append(ws);
