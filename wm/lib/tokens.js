@@ -1,6 +1,6 @@
 /**
  * Do not edit directly
- * Generated on Wed, 12 Jan 2022 22:08:16 GMT
+ * Generated on Fri, 14 Jan 2022 21:35:31 GMT
  */
 
 module.exports = {
@@ -9,7 +9,7 @@ module.exports = {
       "0": {
         "description": "",
         "type": "color",
-        "value": "#131020",
+        "value": "#0d1416",
         "extensions": {
           "org.lukasoppermann.figmaDesignTokens": {
             "styleId": "S:238b97f4e5db4730a89e9feb04602fa5e0b5dd60,",
@@ -21,7 +21,7 @@ module.exports = {
         "original": {
           "description": "",
           "type": "color",
-          "value": "#131020ff",
+          "value": "#0d1416ff",
           "extensions": {
             "org.lukasoppermann.figmaDesignTokens": {
               "styleId": "S:238b97f4e5db4730a89e9feb04602fa5e0b5dd60,",
@@ -44,7 +44,7 @@ module.exports = {
       "1": {
         "description": "",
         "type": "color",
-        "value": "#1a1823",
+        "value": "#111719",
         "extensions": {
           "org.lukasoppermann.figmaDesignTokens": {
             "styleId": "S:6f6730d63d257102f684d9d7f194d2e368587ed5,",
@@ -56,7 +56,7 @@ module.exports = {
         "original": {
           "description": "",
           "type": "color",
-          "value": "#1a1823ff",
+          "value": "#111719ff",
           "extensions": {
             "org.lukasoppermann.figmaDesignTokens": {
               "styleId": "S:6f6730d63d257102f684d9d7f194d2e368587ed5,",
@@ -79,7 +79,7 @@ module.exports = {
       "2": {
         "description": "",
         "type": "color",
-        "value": "#1e1d2f",
+        "value": "#131a1c",
         "extensions": {
           "org.lukasoppermann.figmaDesignTokens": {
             "styleId": "S:2a6f5de79c5c71163b78be237ac8f6e653403c38,",
@@ -91,7 +91,7 @@ module.exports = {
         "original": {
           "description": "",
           "type": "color",
-          "value": "#1e1d2fff",
+          "value": "#131a1cff",
           "extensions": {
             "org.lukasoppermann.figmaDesignTokens": {
               "styleId": "S:2a6f5de79c5c71163b78be237ac8f6e653403c38,",
@@ -114,7 +114,7 @@ module.exports = {
       "3": {
         "description": "",
         "type": "color",
-        "value": "#302d41",
+        "value": "#192022",
         "extensions": {
           "org.lukasoppermann.figmaDesignTokens": {
             "styleId": "S:d5e3c9b7cff32104644aef9dd91bb4df2b0b4cd5,",
@@ -126,7 +126,7 @@ module.exports = {
         "original": {
           "description": "",
           "type": "color",
-          "value": "#302d41ff",
+          "value": "#192022ff",
           "extensions": {
             "org.lukasoppermann.figmaDesignTokens": {
               "styleId": "S:d5e3c9b7cff32104644aef9dd91bb4df2b0b4cd5,",
@@ -149,7 +149,7 @@ module.exports = {
       "4": {
         "description": "",
         "type": "color",
-        "value": "#575268",
+        "value": "#202729",
         "extensions": {
           "org.lukasoppermann.figmaDesignTokens": {
             "styleId": "S:6025ebe70bbb47a7a8a5843ff8966754c611d7a6,",
@@ -161,7 +161,7 @@ module.exports = {
         "original": {
           "description": "",
           "type": "color",
-          "value": "#575268ff",
+          "value": "#202729ff",
           "extensions": {
             "org.lukasoppermann.figmaDesignTokens": {
               "styleId": "S:6025ebe70bbb47a7a8a5843ff8966754c611d7a6,",
@@ -643,7 +643,7 @@ module.exports = {
       "0": {
         "description": "",
         "type": "color",
-        "value": "#6e6c7e",
+        "value": "#363d3e",
         "extensions": {
           "org.lukasoppermann.figmaDesignTokens": {
             "styleId": "S:baf8dd3e192016aadada30a6f8d17aadbeeda13e,",
@@ -655,7 +655,7 @@ module.exports = {
         "original": {
           "description": "",
           "type": "color",
-          "value": "#6e6c7eff",
+          "value": "#363d3eff",
           "extensions": {
             "org.lukasoppermann.figmaDesignTokens": {
               "styleId": "S:baf8dd3e192016aadada30a6f8d17aadbeeda13e,",
@@ -678,7 +678,7 @@ module.exports = {
       "1": {
         "description": "",
         "type": "color",
-        "value": "#988ba2",
+        "value": "#4a5051",
         "extensions": {
           "org.lukasoppermann.figmaDesignTokens": {
             "styleId": "S:b2512fc7cd5006c4c48ed8da19aa2d2eab54c2c3,",
@@ -690,7 +690,7 @@ module.exports = {
         "original": {
           "description": "",
           "type": "color",
-          "value": "#988ba2ff",
+          "value": "#4a5051ff",
           "extensions": {
             "org.lukasoppermann.figmaDesignTokens": {
               "styleId": "S:b2512fc7cd5006c4c48ed8da19aa2d2eab54c2c3,",
@@ -713,7 +713,7 @@ module.exports = {
       "3": {
         "description": "",
         "type": "color",
-        "value": "#c3bac6",
+        "value": "#5c6262",
         "extensions": {
           "org.lukasoppermann.figmaDesignTokens": {
             "styleId": "S:2daae72bf8f6a8b70963c18c4ea828db78fd9b21,",
@@ -725,7 +725,7 @@ module.exports = {
         "original": {
           "description": "",
           "type": "color",
-          "value": "#c3bac6ff",
+          "value": "#5c6262ff",
           "extensions": {
             "org.lukasoppermann.figmaDesignTokens": {
               "styleId": "S:2daae72bf8f6a8b70963c18c4ea828db78fd9b21,",

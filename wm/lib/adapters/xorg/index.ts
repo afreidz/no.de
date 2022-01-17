@@ -40,7 +40,7 @@ export default class XorgManager extends Manager {
   static xscreen: any;
   static borderColor1: any;
   static borderColor2: any;
-  desktop: number;
+  desktop: number
   
   static async setup() {
     const xd = await xInit();
@@ -67,7 +67,9 @@ export default class XorgManager extends Manager {
     inputListener.on('drag', drag => (this.drag = drag));
     inputListener.on('mouse', mouse => (this.mouse = mouse));
     inputListener.on('float', () => this.toggleFloatWin(this.active.win));
-    inputListener.on('raise', () => client.RaiseWindow(this.active.win?.id));
+    inputListener.on('raise', () => {
+      if (this.active.win?.floating) client.RaiseWindow(this.active.win?.id);
+    });
     inputListener.on('move', e => {
       if (!this.active.win?.floating) return;
       const x = this.active.win.geo.x - (this.drag.x - e.x); 
@@ -89,13 +91,13 @@ export default class XorgManager extends Manager {
       client.ResizeWindow(this.active.win.id, w,h);
     });
 
-    client.on('event', e => {
+    client.on('event', async e => {
       const { wid, name } = e;
       console.log('Event', wid, name);
       switch (name) {
-        case 'MapRequest': this.handleMap(wid); break;
         case 'EnterNotify': this.handleEnter(wid); break;
         case 'LeaveNotify': this.handleLeave(wid); break;
+        case 'MapRequest': await this.handleMap(wid); break;
         case 'DestroyNotify': this.handleDestroy(wid); break;
       }
     });
@@ -106,7 +108,6 @@ export default class XorgManager extends Manager {
 
     ipc.on('wm', (data) => {
       const { msg } = data;
-      console.log('IPC', data);
       switch (msg) {
         case 'command':
           const { command } = data;
@@ -145,7 +146,6 @@ export default class XorgManager extends Manager {
   }
 
   kill() {
-    console.log('Kill', this.active.win?.id);
     if (!this.active.win?.id) return;
     XorgManager.client.DestroyWindow(this.active.win.id);
   }
@@ -279,6 +279,7 @@ export default class XorgManager extends Manager {
   }
 
   handleEnter(id: number) {
+    if (!Window.exists(id)) return;
     const client = XorgManager.client;
     client.ChangeWindowAttributes(id, { borderPixel: XorgManager.borderColor2 });
     client.SetInputFocus(id);
@@ -286,6 +287,7 @@ export default class XorgManager extends Manager {
   }
 
   handleLeave(id: number) {
+    if (!Window.exists(id)) return;
     const client = XorgManager.client;
     client.ChangeWindowAttributes(id, { borderPixel: XorgManager.borderColor1 });
     client.SetInputFocus(XorgManager.xscreen.root);
@@ -293,19 +295,22 @@ export default class XorgManager extends Manager {
   }
 
   async handleMap(id: number) {
-    if(!!Window.getById(id)) return console.log('ID',id,'exists');
     const name = await this.getWinName(id);
+    const or = await this.getOverrideRedirect(id);
+
+    if (Window.exists(id)) return;
+
     if (name === 'no.de-desktop') {
       this.createDesktop(id);
+    } else if (or) {
+      XorgManager.client.MapWindow(id);
     } else {
       this.createWindow(id);
     }
   }
 
   handleDestroy(id: number) {
-    const win = Window.getById(id);
-    if (!win) return;
-    this.destroyWindow(win);
+    if (Window.exists(id)) this.destroyWindow(Window.getById(id));
   }
 
   createDesktop(wid: number) {
@@ -329,10 +334,24 @@ export default class XorgManager extends Manager {
 
   destroyWindow(win: Window){
     if (win.id === this.desktop) return;
-    console.log('Destroy', win.id);
     const ws = win.workspace;
     super.destroyWindow(win);
     this.draw(ws);
+  }
+
+  async getOverrideRedirect(wid: number): Promise<Boolean> {
+    const client = XorgManager.client;
+    return new Promise(r => {
+      client.GetWindowAttributes(wid, (err, attrs) => {
+        if (err) {
+          console.error(err);
+          r(null);
+        } else {
+          if (attrs?.overrideRedirect === 1) return r(true);
+          return r(false);
+        }
+      });
+    });
   }
 
   getWinName(wid: number): Promise<string| null> {
@@ -348,7 +367,7 @@ export default class XorgManager extends Manager {
           const val = prop.data.toString();
           r(val);
         } 
-      })
+      });
     });
   }
 
@@ -357,6 +376,7 @@ export default class XorgManager extends Manager {
     const client = XorgManager.client;
 
     windows.forEach(win => {
+      if (!Window.exists(win.id)) return; // this is weaksauce :(
       if (!win.workspace.active) {
         client.UnmapWindow(win.id);
         win.mapped = false;

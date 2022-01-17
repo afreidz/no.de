@@ -21,7 +21,7 @@
     align-items: stretch;
     border-radius: 50vh;
     justify-content: stretch;
-    background-color: map.get($theme, 'colors', 'black', '1');
+    background-color: map.get($theme, 'colors', 'black', '3');
     padding: 0 map.get($theme, 'spacing', 2);
   }
 </style>

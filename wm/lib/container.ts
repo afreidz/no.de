@@ -58,6 +58,9 @@ export default class Container {
   screens?: Array<Geography>;
 
   constructor(opts: ContainerConstructor = {}) {
+    this.id = opts?.id || Cache.size + 1;
+    Cache.set(this.id, this);
+    
     this.ratio = 1;
     this.isWin = false;
     this.isRoot = false;
@@ -65,10 +68,7 @@ export default class Container {
     this.isWorkspace = false;
     this.dir = opts.dir || 'ltr';
     this.#geo = opts?.geo || defaultGeo;
-    this.id = opts?.id || Cache.size + 1;
     this.#children = new Set();
-
-    Cache.set(this.id, this);
   }
 
   get geo(): Geography {
@@ -204,6 +204,10 @@ export default class Container {
     c.parent = null;
     this.#children.delete(c);
     if (!this.isRoot) layout(this.workspace);
+  }
+
+  static exists(id): Boolean {
+    return Cache.has(id);
   }
 
   static getById(id): Container {

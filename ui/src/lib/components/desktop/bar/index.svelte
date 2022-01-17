@@ -12,7 +12,7 @@
         </Item>
       </Group>
       <Group>
-        <Item><small class="active clock"><ClockIcon color={color.black['4']}/> <span>{formattedTime}</span></small></Item>
+        <Item><small class="active clock"><ClockIcon color={color.gray['1']}/> <span>{formattedTime}</span></small></Item>
       </Group>
     </div>
   {/each}
@@ -53,7 +53,7 @@
     align-items: stretch;
     backdrop-filter: blur(1px);
     justify-content: space-between;
-    background-color: rgba(0,0,0,0.3);
+    background-color: map.get($theme, 'colors', 'black', '0');
     padding: map.get($theme, 'spacing', 0);
   }
 
@@ -75,7 +75,7 @@
     display: flex;
     font-weight: bold;
     align-items: center;
-    color: map.get($theme, 'colors', 'black', '3');
+    color: map.get($theme, 'colors', 'gray', '0');
 
     &.ws {
       font-size: 1.5rem;
