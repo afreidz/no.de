@@ -7,6 +7,7 @@
     "./ipc/**/*.ts",
     "./wm/**/*.ts",
     "./cli/**/*.ts",
+    "./wm/lib/tokens.js",
   ],
   "exclude": [
     "./wm/lib/adapters/browser.ts"

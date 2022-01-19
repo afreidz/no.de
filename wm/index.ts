@@ -1,6 +1,5 @@
-#!/usr/bin/env ts-node
 import * as x11 from 'x11';
-import Manager from './lib/adapters/xorg';
+import Manager from './lib/adapters/xorg/index.js';
 
 async function init(): Promise<any> {
   const { client, display } = await new Promise((resolve, reject) => {

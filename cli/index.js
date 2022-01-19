@@ -1,170 +1,65 @@
-#!/usr/bin/env node
-const { join } = require('path');
-const yargs = require('yargs/yargs');
-const { hideBin } = require('yargs/helpers');
-const IPCClient = require('no.de-ipc/client');
-const { spawn, exec } = require('child_process');
-const { start, stop, } = require('./src/pm2.js');
+#!/usr/bin/env zx
+const IPCClient = require('@no.de/ipc');
+const configure = require('../configure.js');
 
-const uiurls = {
-  desktop: 'http://localhost:7000/desktop',
-  brain: 'http://localhost:7000/brain',
-};
+process.env.FORCE_COLOR=3
+process.env.XDG_CURRENT_DESKTOP="no.de"
 
-const display = 2;
+const ns = 'no.de';
+const cmd = argv._[1] || null;
+const base = path.join(__dirname, '../');
+cd(base);
 
-yargs(hideBin(process.argv))
-  .command('init', 'start supporting procs', init)
-  .command('kill', 'kill running support procs', stopAll)
-  .command('flush', 'flush logs', flush)
-  .command('logs', 'display logs', logs)
-  .command('ls', 'display logs', list)
-  .command({
-    command: 'wm [command] [args]',
-    describe: 'Issues a window manager [command] with [args]',
-    alias: 'window-manager',
-    handler: handleWMCMD,
-    builder: {
-      command: {
-        alias: 'c',
-        demand: true,
-        choices: [
-          "activate-workspace",
-          "toggle-workspaces",
-          "moveto-workspace",
-          "cycle-workspace",
-          "add-workspace",
-          "toggle-float",
-          "toggle-brain",
-          "move-within",
-          "split-off",
-          "split-on",
-          "resize",
-          "exec",
-          "flip",
-          "kill",
-        ],
-      },
-      args: {
-        alias: 'a',
-        array: true,
-        demand: false,
-      }
-    }
-  })
-  .help('h')
-  .parse();
+switch (cmd) {
+  case 'flush': flush(); break;
+  case 'init': init(); break; 
+  case 'kill': kill(); break; 
+  case 'logs': logs(); break; 
+  case 'wm': wmcmd(); break; 
+  case 'ls': ls(); break; 
+}
 
-function flush() {
-  const names = [
-    "no.de-ui",
-    "no.de-wm",
-    "no.de-ipc",
-    "no.de-hkd",
-    "no.de-brain",
-    "no.de-desktop",
-    "no.de-compositor",
-  ];
-
-  names.forEach(n => {
-    spawn('npx', ['pm2', 'flush', n], {
-      stdio: 'inherit',
-      cwd: join(__dirname, '../')
-    });
+function argsToArr(args) {
+  return Object.entries(args).map(e => {
+    return `--${e[0]}=${e[1]}`;
   });
 }
 
-function logs(e) {
-  spawn('npx', ['pm2', ...e.argv._], {
-    stdio: 'inherit',
-    cwd: join(__dirname, '../'),
-  });
+async function flush() {
+  await $`npx pm2 flush -n ${ns}`;
 }
 
-function list() {
-  spawn('npx', ['pm2', 'ls'], {
-    stdio: 'inherit',
-    cwd: join(__dirname, '../')
-  });
+async function logs() {
+  const args = { ...argv };
+  delete args._;
+
+  await $`npx pm2 logs ${argsToArr(args)}`;
 }
 
-async function stopAll() {
-  await stop('no.de-ui');
-  await stop('no.de-wm');
-  await stop('no.de-ipc');
-  await stop('no.de-hkd');
-  await stop('no.de-brain');
-  await stop('no.de-desktop');
-  await stop('no.de-compositor');
+async function kill() {
+  await $`npx pm2 kill -n ${ns}`;
 }
 
 async function init() {
-  const wmid = +new Date;
+  await kill();
+  await flush();
+  await configure();
 
-  // await start({
-  //   name: 'no.de-ui',
-  //   script: 'npm start',
-  //   env: { PORT: 7000 },
-  //   cwd: join(__dirname, '../ui'),
-  // });
-
-  await start({
-    name: 'no.de-ipc',
-    script: 'npm start',
-    env: { PORT: 7001 },
-    cwd: join(__dirname, '../ipc'),
-  });
-
-  await start({
-    name: 'no.de-wm',
-    autorestart: false,
-    script: `startx ${join(__dirname, '../wm/', 'index.ts')} -- :${display}`,
-  });
-
-  // await new Promise(r => setTimeout(r, 1000));
-
-//  await start({
-//    name: 'no.de-compositor',
-//    cwd: join(__dirname, '../'),
-//    env: { DISPLAY: `:${display}` },
-//    script: 'picom --config ./picom --experimental-backends',
-//  });
-
-  await start({
-    name: 'no.de-hkd',
-    env: { DISPLAY: `:${display}` },
-    cwd: join(__dirname, '../'),
-    script: `/usr/bin/sxhkd -c sxhkdrc`,
-  });
-
-  // await new Promise(r => setTimeout(r, 500));
-
-  // await start({
-  //   autorestart: false,
-  //   name: 'no.de-desktop',
-  //   env: { DISPLAY: `:${display}` },
-  //   cwd: join(__dirname, '../ui/bin'),
-  //   script: `./webview.cjs --title desktop_${wmid} --type "DESKTOP" --url ${uiurls['desktop']}`
-  // });
-
-  // await new Promise(r => setTimeout(r, 2000));
-
-  // await start({
-  //   autorestart: false,
-  //   name: 'no.de-brain',
-  //   env: { DISPLAY: `:${display}` },
-  //   cwd: join(__dirname, '../ui/bin'),
-  //   script: `./webview.cjs --title brain_${wmid} --url ${uiurls['brain']}`
-  // });
-
-  exec('xsetroot -cursor_name left_ptr');
+  await $`npm run generate-tokens`;
+  await $`npx tsc`;
+  await $`npx pm2 start ${path.join(base, 'cli/ecosystem.config.js')}`;
+  await $`npx pm2 restart cursor`;
 }
 
-async function handleWMCMD(cmd) {
-  const client = new IPCClient(['wm']);
-  const { command, args } = cmd;
-  client.send('wm', { msg: 'command', command, args });
+async function ls() {
+  await $`npx pm2 ls -n ${ns}`;
+}
 
-  await new Promise(r => setTimeout(r, 1000));
+async function wmcmd() {
+  const client = new IPCClient(['wm']);
+  const command = argv.c;
+  const args = Array.isArray(argv.a) ? argv.a : [argv.a];
+
+  await client.send('wm', { msg: 'command', command, args });
   client.close();
 }

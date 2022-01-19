@@ -1,5 +1,5 @@
 import Section from './section.js';
-import Container, { ContainerConstructor, Coord } from './container';
+import Container, { ContainerConstructor, Coord } from './container.js';
 
 export default class Window extends Container {
   mapped?: Boolean;

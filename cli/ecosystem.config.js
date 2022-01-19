@@ -1,54 +1,71 @@
 const { join } = require('path');
+const config = require('../no.de.config.json');
 
-const display = 2;
 const ns = 'no.de';
 const base = join(__dirname, '../');
+const uiport = config.ui?.port || 7000;
+const display = config.wm?.display || 2;
+const ipcport = config.ipc?.port || 7001;
 
 const uiurls = {
-  desktop: 'http://localhost:7000/desktop',
+  desktop: `http://localhost:${uiport}/desktop`,
 };
 
-module.exports = {
-  apps: [{
+const apps = [{
+  name: 'ipc',
+  namespace: ns,
+  script: `npm start`, 
+  cwd: join(base, 'ipc'),
+  env: { PORT: ipcport },
+}, {
+  cwd: base,
+  name: 'wm',
+  namespace: ns,
+  autorestart: false,
+  script: `startx ${join(base, 'wm/startwm')} -- :${display}`
+}, {
+  name: 'hkd',
+  namespace: ns,
+  restart_delay: 1000,
+  env: { DISPLAY: `:${display}` },
+  script: `/usr/bin/sxhkd -c ${join(base, 'sxhkdrc')}`
+}, {
+  namespace: ns,
+  name: 'cursor',
+  autorestart: false,
+  env: { DISPLAY: `:${display}` },
+  script: 'xsetroot -cursor_name left_ptr',
+}];
+
+if (config.wm?.ui?.desktop) {
+  apps.push({
     name: 'ui',
     namespace: ns,
-    env: { PORT: 7000 },
     script: `npm start`,
+    env: { PORT: uiport },
     cwd: join(base, 'ui'),
-  },{
-    name: 'ipc',
-    namespace: ns,
-    env: { PORT: 7001 },
-    script: `/usr/bin/env ts-node ${join(base, 'ipc/index.ts')}` 
-  }, {
-    name: 'wm',
-    namespace: ns,
-    autorestart: false,
-    script: `startx ${join(base, 'wm/index.ts')} -- :${display}`
-  }, {
-    name: 'hkd',
-    namespace: ns,
-    restart_delay: 4000,
-    env: { DISPLAY: `:${display}` },
-    script: `/usr/bin/sxhkd -c ${join(base, 'sxhkdrc')}`
-  }, {
+  });
+}
+
+if (config.wm?.ui?.desktop) {
+  apps.push({
     namespace: ns,
     name: 'desktop',
     restart_delay: 1000,
     env: { DISPLAY: `:${display}`},
     script: `${join(base, 'ui/bin', 'webview.cjs')} --title ${ns}-desktop --type "DESKTOP" --url ${uiurls.desktop}`
-  }, {
+  })
+}
+
+if (config.wm?.compositor) {
+  apps.push({
     cwd: base,
     namespace: ns,
     name: 'compositor',
-    restart_delay: 4000,
+    restart_delay: 1000,
     env: { DISPLAY: `:${display}` },
     script: 'picom --config ./picom --experimental-backends',
-  }, {
-    namespace: ns,
-    name: 'cursor',
-    autorestart: false,
-    env: { DISPLAY: `:${display}` },
-    script: 'xsetroot -cursor_name left_ptr',
-  }]
+  })
 }
+
+module.exports = { apps }

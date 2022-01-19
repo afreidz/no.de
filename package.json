@@ -1,7 +1,7 @@
 {
   "name": "no.de",
   "bin": {
-    "no.de": "./cli/index.mjs"
+    "no.de": "./cli/index.js"
   },
   "scripts": {
     "generate-tokens": "style-dictionary build -c ./sdconfig.json"

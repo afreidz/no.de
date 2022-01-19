@@ -2,12 +2,13 @@ import Root from './root';
 import Window from './window';
 import Section from './section';
 import Workspace from './workspace';
+import config from '../../no.de.config.json';
 import Container, { Gaps, Dir, Geography } from './container';
 
 const dir1: Dir = 'ltr';
-const strut: Gaps = { t: 40, b: 10, l: 10, r: 10 };
 export const dir2: Dir = dir1 === 'ltr' ? 'ttb' : 'ltr';
-export const gaps: Gaps = { t: 10, b: 10, l: 10, r: 10 };
+const strut: Gaps = config.wm?.strut || { t: 40, b: 10, l: 10, r: 10 };
+export const gaps: Gaps = config.wm?.gaps || { t: 10, b: 10, l: 10, r: 10 };
 
 export type Mouse = {
   x: number,

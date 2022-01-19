@@ -1,3 +1,2 @@
-import IPCClient from '../../../../ipc/src/client.mjs';
-
+import IPCClient from '@no.de/ipc';
 export const ipc = new IPCClient(['wm']);

@@ -1,6 +1,6 @@
-import Window from './window';
-import Workspace from './workspace';
-import Container, { ContainerConstructor, Geography } from './container';
+import Window from './window.js';
+import Workspace from './workspace.js';
+import Container, { ContainerConstructor, Geography } from './container.js';
 
 export default class Section extends Container {
   constructor(opts: ContainerConstructor = {}) {

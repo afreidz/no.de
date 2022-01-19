@@ -2,5 +2,7 @@ node_modules
 build
 __wm
 *.log
-sxhkdrc
-picom
+sxhkdrc*
+picom*
+no.de.config.*
+**/lib/**/tokens.*

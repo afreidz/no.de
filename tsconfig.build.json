@@ -10,8 +10,11 @@
     "strict": false,
     "outDir": "build",
     "sourceMap": true,
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
     "noImplicitUseStrict": true,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "paths": {
       "@no.de/*": ["./*"]
     }

@@ -1,14 +1,14 @@
 const uuid = require('uuid');
 const { sep } = require('path');
-const { Server } = require('ws');
+const { WebSocketServer } = require('ws');
 
-class IPCServer {
+module.exports = class IPCServer {
   #server;
 
   constructor(opts = { port: process.env.PORT || 8081 }) {
     const { port } = opts;
     this.clients = new Map();
-    this.#server = new Server({ port });
+    this.#server = new WebSocketServer({ port });
 
     this.#server.on('connection', (ws, req) => {
       const id = uuid.v4();
@@ -32,4 +32,3 @@ class IPCServer {
   }
 }
 
-module.exports = IPCServer;

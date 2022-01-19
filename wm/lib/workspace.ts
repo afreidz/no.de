@@ -1,6 +1,6 @@
-import Root from './root';
-import Section from './section';
-import Container, { ContainerConstructor, Geography, Gaps, Coord } from './container';
+import Root from './root.js';
+import Section from './section.js';
+import Container, { ContainerConstructor, Geography, Gaps, Coord } from './container.js';
 
 interface WorkspaceConstructor extends ContainerConstructor {
   strut?: Gaps,

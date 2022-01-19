@@ -4,8 +4,14 @@
   "scripts": {
     "start": "node ./index.js"
   },
+  "exports": {
+    "import": "./src/client.browser.js",
+    "require": "./src/client.node.js"
+  },
+  "module": "src/client.browser.js",
+  "main": "src/client.node.js",
   "dependencies": {
     "events": "^3.3.0",
-    "isomorphic-ws": "^4.0.1"
+    "ws": "^8.4.2"
   }
 }

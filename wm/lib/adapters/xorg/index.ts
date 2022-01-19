@@ -1,13 +1,13 @@
 import * as x11 from 'x11';
-import input from './input';
-import Window from '../../window';
-import tokens from '../../tokens'; 
-import Section from '../../section';
-import Workspace from '../../workspace';
+import input from './input.js';
+import IPCClient from '@no.de/ipc';
 import { exec } from 'child_process';
-import IPCClient from '@no.de/ipc/src/client';
-import Manager, { gaps, dir2 } from '../../manager';
-import Container, { Geography } from '../../container';
+import Window from '../../window.js';
+import Section from '../../section.js';
+import tokens from '../../tokens.json'; 
+import Workspace from '../../workspace.js';
+import Manager, { gaps, dir2 } from '../../manager.js';
+import Container, { Geography } from '../../container.js';
 
 const {
   EnterWindow,
@@ -48,8 +48,8 @@ export default class XorgManager extends Manager {
     this.client = xd.client;
     this.xscreen = xd.screen[0];
     this.ipc = new IPCClient(['wm']);
-    this.borderColor1 = tokens.color.black['0'].value.replace('#','0x');
-    this.borderColor2 = tokens.color.highlights.blue.value.replace('#','0x');
+    this.borderColor1 = tokens.color.black['0'].replace('#','0x');
+    this.borderColor2 = tokens.color.highlights.blue.replace('#','0x');
   }
 
   constructor(screens: Array<Geography>, geo: Geography) {
