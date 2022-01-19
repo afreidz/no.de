@@ -25,7 +25,6 @@ const config = {
   }),
   kit: {
     target: '#app',
-    ssr: false,
     vite: {
       optimizeDeps: { include: ['ini', 'fuse.js'] },
     }
