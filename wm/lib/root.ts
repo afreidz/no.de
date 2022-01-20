@@ -1,5 +1,5 @@
 import Workspace from './workspace.js';
-import Container, { ContainerConstructor, Geography } from './container.js';
+import Container, { ContainerConstructor, Geography, Coord } from './container.js';
 
 interface RootConstructor extends ContainerConstructor {
   screens: Array<Geography>,
@@ -22,5 +22,15 @@ export default class Root extends Container {
 
   remove(c: Workspace) {
     super.remove(c);
+  }
+
+  getScreenByCoords(c: Coord): Geography {
+    const { x, y } = c;
+    return this.screens.find(s => {
+      return x >= s.x
+        && x <= (s.x + s.w)
+        && y >= s.y
+        && y <= (s.y + s.h);
+    });
   }
 }

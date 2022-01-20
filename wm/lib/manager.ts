@@ -54,7 +54,8 @@ export default class Manager {
     //noop: use adapters
   }
 
-  addWorkspace(screen: number = 0, name: string | null = null) {
+  addWorkspace(target: number | null = null, name: string | null = null) {
+    const screen = (target >= 0 && target) || this.root.getScreenByCoords(this.mouse)?.i || 0;
     const ws = new Workspace({ dir: dir1, screen, strut, name });
     const sc = new Section({ dir: dir2, gaps });
     this.root.append(ws);
@@ -111,17 +112,6 @@ export default class Manager {
     target.update();
   }
 
-  getWinClass(wid) {
-    // const { WM_CLASS, STRING } = this.client.atoms;
-    // return new Promise(r => {
-    //   this.client.GetProperty(0, wid, WM_CLASS, STRING, 0, 10000000, (err, prop) => {
-    //     if (err) return console.error(err);
-    //     const val = prop.data.toString();
-    //     r(val);
-    //   });
-    // });
-  }
-
   createWindow(wid: number = null, split?: Boolean) {
     const ws = this.active.ws;
 
@@ -142,19 +132,5 @@ export default class Manager {
       win.parent.remove(win);
       win.deref();
     }
-  }
-
-  setType(wid) {
-    // const name = await this.getWinName(wid);
-
-    // if (name.includes(`desktop_${this.id}`)) {
-    //   this.desktop = wid;
-    //   this.specialWids.push(wid);
-    // }
-
-    // if (name.includes(`brain_${this.id}`)) {
-    //   this.brain = wid;
-    //   this.specialWids.push(wid);
-    // }
   }
 }

@@ -122,6 +122,7 @@ export default class XorgManager extends Manager {
             case 'kill': this.kill(); break;
             case 'flip': this.flipDir(); break;
             case 'resize': this.resize(...data.args); break;
+            case 'add-workspace': this.addWorkspace(); break;
             case 'cycle-workspace': this.cycleWorkspace(); break;
             case 'toggle-fullscreen': this.toggleFullscreenWin(); break;
             case 'move-within': this.moveWithinWorkspace(data.args[0]); break;
@@ -165,6 +166,12 @@ export default class XorgManager extends Manager {
   flipDir(ws?: Workspace) {
     super.flipDir(ws);
     this.draw(ws);
+    this.sendUpdate();
+  }
+
+  addWorkspace(target?: number, name?: string): void {
+    super.addWorkspace(target, name);
+    this.draw();
     this.sendUpdate();
   }
 
