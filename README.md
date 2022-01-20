@@ -104,5 +104,5 @@ out here:
 * clone this repo
 * run `npm install` from the repo dir to install npm deps
 * run `npm link` from the repo dir to make `no.de` cmd available
-* configure it by creating `no.de.config.json` in the root [example]()
+* configure it by creating `no.de.config.json` in the root [example](https://github.com/afreidz/no.de/blob/main/no.de.config.json.example)
 * run `no.de init` to start it all up
