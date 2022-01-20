@@ -3,6 +3,6 @@ build
 __wm
 *.log
 sxhkdrc*
-no.de.config.*
+no.de.config.json
 ui/src/lib/styles/tokens.scss
 **/lib/**/tokens.*
