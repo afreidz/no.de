@@ -10,12 +10,20 @@ async function init(): Promise<any> {
   });
 
   const RandR: any = await new Promise(r => {
-    client.require('randr', (err, ext) => r(ext));
+    client.require('randr', (err, ext) => {
+      console.log('RandR', err, ext);
+      r(ext);
+    });
   });
+  console.log('RandR 2', RandR);
 
   const outputs: any = await new Promise(r => {
-    RandR.GetScreenResources(display.screen[0].root, (err, res) => r(res.crtcs));
+    RandR.GetScreenResources(display.screen[0].root, (err, res) => {
+      console.log('Get Screen Resources', err, res);
+      r(res.crtcs);
+    });
   });
+  console.log('Outputs', outputs);
 
   return new Promise(async r => {
     const info = [];
@@ -47,6 +55,7 @@ async function init(): Promise<any> {
 (async () => {
   await Manager.setup();
   const { geo, screens } = await init();
+  console.log("geo", geo, "screens", screens);
   const manager = new Manager(screens, geo);
 
   manager.listen();
