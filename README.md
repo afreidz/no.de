@@ -85,18 +85,18 @@ out here:
     * git
 
 
-     yay -S --needed \
-      git \
-      gtk3 \
-      sxhkd \
-      cairo \
-      webkit2gtk \
-      base-devel \
-      xorg-server \
-      xorg-apps \
-      xorg-xinit \
-      picom-ibhagwan-git \
-      gobject-introspection 
+       yay -S --needed \
+        git \
+        gtk3 \
+        sxhkd \
+        cairo \
+        webkit2gtk \
+        base-devel \
+        xorg-server \
+        xorg-apps \
+        xorg-xinit \
+        picom-ibhagwan-git \
+        gobject-introspection 
 
 ### Installation
 * finish [prerequisites](#prereq)
