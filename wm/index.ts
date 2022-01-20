@@ -52,12 +52,15 @@ async function init(): Promise<any> {
   await Manager.setup();
   const { geo, screens } = await init();
   const manager = new Manager(screens, geo);
-  console.log('Root screens', manager.root.screens)
   manager.listen();
-  manager.addWorkspace(0, '1');
-  manager.addWorkspace(0, '2');
-  manager.addWorkspace(1, '3');
-  manager.addWorkspace(1, '4');
+
+  let count = 1;
+  screens.forEach(s => {
+    manager.addWorkspace(s.i, `${count}`);
+    count+=1;
+    manager.addWorkspace(s.i, `${count}`);
+    count+=1;
+  });
 
   console.log(`Hello from the xorg adapter of no.de running on Display: ${process.env.DISPLAY}`);
 
