@@ -5,4 +5,5 @@ __wm
 sxhkdrc*
 picom*
 no.de.config.*
+ui/src/lib/styles/tokens.scss
 **/lib/**/tokens.*
