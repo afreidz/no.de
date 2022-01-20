@@ -4,7 +4,7 @@ const config = require('../no.de.config.json');
 const ns = 'no.de';
 const base = join(__dirname, '../');
 const uiport = config.ui?.port || 7000;
-const display = config.wm?.display || 2;
+const display = config.wm?.display || 1;
 const ipcport = config.ipc?.port || 7001;
 
 const uiurls = {
@@ -22,7 +22,7 @@ const apps = [{
   name: 'wm',
   namespace: ns,
   autorestart: false,
-  script: `startx ${join(base, 'wm/startwm')} -- :${display}`
+  script: `startx ${join(base, 'wm/startwm')} -- vt${display}`
 }, {
   name: 'hkd',
   namespace: ns,
