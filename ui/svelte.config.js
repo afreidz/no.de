@@ -1,9 +1,11 @@
 import { join } from "path";
 import { createRequire } from "module";
-import sveltePreprocess from 'svelte-preprocess';
+import preprocess from 'svelte-preprocess';
+import adapter from '@sveltejs/adapter-auto';
 
+/** @type {import('@sveltejs/kit').Config} */
 const config = {
-  preprocess: sveltePreprocess({
+	preprocess: preprocess({
     scss: {
       importer(file, _, done) {
         if (file.startsWith("$lib/")) {
@@ -23,12 +25,11 @@ const config = {
       }
     }
   }),
-  kit: {
-    target: '#app',
-    vite: {
-      optimizeDeps: { include: ['ini', 'fuse.js'] },
-    }
-  }
+	kit: {
+    vite: { ssr: false },
+		adapter: adapter(),
+		target: '#app'
+	}
 };
 
 export default config;
