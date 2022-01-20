@@ -3,7 +3,6 @@ build
 __wm
 *.log
 sxhkdrc*
-picom*
 no.de.config.*
 ui/src/lib/styles/tokens.scss
 **/lib/**/tokens.*

@@ -1,0 +1,27 @@
+vsync = true;
+backend = "glx";
+glx-no-stencil = true;
+glx-copy-from-front = false;
+glx-no-rebind-pixmap = true;
+
+shadow = true;
+shadow-radius = 20;
+shadow-offset-x = -20;
+shadow-offset-y = -10;
+shadow-opacity = 0.25;
+
+fading = true;
+fade-delta = 6;
+fade-in-step = 0.03;
+fade-out-step = 0.03;
+no-fading-destroyed-argb = true
+
+corner-radius = 3;
+round-borders = 3;
+
+transition-length = 1
+transition-pow-x = 0.1
+transition-pow-y = 0.1
+transition-pow-w = 0.1
+transition-pow-h = 0.1
+size-transition = false
