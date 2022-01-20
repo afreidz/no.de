@@ -22,7 +22,7 @@ const apps = [{
   name: 'wm',
   namespace: ns,
   autorestart: false,
-  script: `startx ${join(base, 'wm/startwm')} -- vt${display}`
+  script: `startx ${join(base, 'wm/startwm')} -- :${display} vt${display}`
 }, {
   name: 'hkd',
   namespace: ns,
