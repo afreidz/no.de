@@ -29,12 +29,6 @@ const apps = [{
   restart_delay: 1000,
   env: { DISPLAY: `:${display}` },
   script: `/usr/bin/sxhkd -c ${join(base, 'sxhkdrc')}`
-}, {
-  namespace: ns,
-  name: 'cursor',
-  autorestart: false,
-  env: { DISPLAY: `:${display}` },
-  script: 'xsetroot -cursor_name left_ptr',
 }];
 
 if (config.wm?.ui?.desktop) {

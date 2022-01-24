@@ -1,6 +1,7 @@
 #!/usr/bin/env zx
 const IPCClient = require('@no.de/ipc');
 const configure = require('../configure.js');
+const config = require('../no.de.config.json');
 
 process.env.FORCE_COLOR=3
 process.env.XDG_CURRENT_DESKTOP="no.de"
@@ -48,7 +49,7 @@ async function init() {
   await $`npm run generate-tokens`;
   await $`npx tsc`;
   await $`npx pm2 start ${path.join(base, 'cli/ecosystem.config.js')}`;
-  await $`npx pm2 restart cursor`;
+  await $`xsetroot -cursor_name left_ptr -d :${config.wm.display || 0}`;
 }
 
 async function ls() {
