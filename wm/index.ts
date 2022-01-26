@@ -60,6 +60,10 @@ async function init(): Promise<any> {
     count+=1;
     manager.addWorkspace(s.i, `${count}`);
     count+=1;
+    manager.addWorkspace(s.i, `${count}`);
+    count+=1;
+    manager.addWorkspace(s.i, `${count}`);
+    count+=1;
   });
 
   console.log(`Hello from the xorg adapter of no.de running on Display: ${process.env.DISPLAY}`);

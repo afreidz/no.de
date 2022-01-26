@@ -1,4 +1,5 @@
 import Root from './root.js';
+import Window from './window.js';
 import Section from './section.js';
 import Container, { ContainerConstructor, Geography, Gaps, Coord } from './container.js';
 
@@ -57,6 +58,16 @@ export default class Workspace extends Container {
     return all[(ci+1)%all.length];
   }
 
+  get nextOccupied() {
+    if (!Workspace.getAllOnScreen(this.screen).some(ws => ws.hasWindows)) return;
+    if (this.next.hasWindows) return this.next;
+    return this.next.nextOccupied;
+  }
+
+  get hasWindows(): Boolean {
+    return this.descendents.some(c => c instanceof Window);
+  }
+
   get layoutChildren(): Array<Container> {
     const lc = super.layoutChildren.filter(c => c.layoutChildren.length);
     return lc.length === 0 ? super.children : lc;
@@ -76,18 +87,14 @@ export default class Workspace extends Container {
       console.error('not every section has a child');
     }
   }
-
+  
   appendTo(c: Root, i?: number) {
     super.appendTo(c, i);
   }
 
   remove(c: Section) {
-    if (this.children.length <= 1) {
-      console.error('workspace must have 1 section');
-    } else {
-      super.remove(c);
-      c.deref();
-    }
+    super.remove(c);
+    c.deref();
   }
 
   static getAllActive(): Array<Workspace> {
@@ -116,5 +123,9 @@ export default class Workspace extends Container {
 
   static getByName(name: string): Workspace {
     return this.getAll().find(w => w.name == name);
+  }
+
+  static getByNameOrId(p: string | number): Workspace {
+    return this.getByName(`${p}`) || this.getById(p);
   }
 }

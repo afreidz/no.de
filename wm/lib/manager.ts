@@ -40,8 +40,8 @@ export default class Manager {
     const win: Window = this.activeWin || Window.getByCoords(this.mouse);
     const ws: Workspace = win?.workspace
       || Workspace.getByCoords(this.mouse)
-      || Workspace.getAll().find(ws => ws.active);
-    const sec: Section = win?.parent || ws.children[ws.children.length-1];
+      || Workspace.getAllOnScreen(this.root.screens[0])[0];
+    const sec: Section = win?.parent || ws?.children[ws?.children.length-1];
 
     return {
       win,
@@ -60,6 +60,18 @@ export default class Manager {
     const sc = new Section({ dir: dir2, gaps });
     this.root.append(ws);
     ws.append(sc);
+  }
+  
+  removeWorkspace(ws: number | null = null) {
+    const target = Workspace.getByNameOrId(ws) || this.active.ws;
+    if (!target || target.hasWindows) return;
+    target.next.active = true;
+    target.children.forEach(c => {
+      target.remove(c);
+      c.deref();
+    });
+    target.parent.remove(target);
+    target.deref();
   }
 
   run(cmd) {

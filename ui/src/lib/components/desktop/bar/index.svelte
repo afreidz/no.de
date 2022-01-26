@@ -4,7 +4,9 @@
       <Group>
         <Item>
           {#each $ws.filter(ws => (ws.screen == screen.i)) as ws, b}
-            <small class="ws ws_screen_{temp.indexOf(ws)+1}" class:active={ws.active}>{#if ws.active}⬢{:else}⬡{/if}</small>
+            <small class="ws ws_screen_{temp.indexOf(ws)+1}" class:active={ws.active}>
+              {#if ws.hasWindows}⬢{:else}⬡{/if}
+            </small>
           {/each}
         </Item>
         <Item remBefore={1}>

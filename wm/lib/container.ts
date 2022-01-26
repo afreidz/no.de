@@ -56,7 +56,7 @@ export default class Container {
   #fullscreen?: Boolean;
   #children: Set<Container>;
   screens?: Array<Geography>;
-
+  
   constructor(opts: ContainerConstructor = {}) {
     this.id = opts?.id || Cache.size + 1;
     Cache.set(this.id, this);
@@ -140,6 +140,14 @@ export default class Container {
     return all[(ci+1)%all.length];
   }
 
+  get nextOccupied(): Container {
+    return this.next;
+  }
+
+  get hasWindows(): Boolean {
+    return this.children.some(c => c.constructor.name === 'Window');
+  }
+
   get descendents(): Array<Container> {
     if (this.children.length === 0) return [];
     return this.children.map(c => ([c, c.descendents].flat())).flat();
@@ -172,6 +180,7 @@ export default class Container {
       name: this.name,
       active: this.active,
       screen: this.screen?.i,
+      hasWindows: this.hasWindows,
     }
   }
 

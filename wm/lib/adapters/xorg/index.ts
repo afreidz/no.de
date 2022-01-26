@@ -123,8 +123,9 @@ export default class XorgManager extends Manager {
             case 'flip': this.flipDir(); break;
             case 'resize': this.resize(...data.args); break;
             case 'add-workspace': this.addWorkspace(); break;
-            case 'cycle-workspace': this.cycleWorkspace(); break;
+            case 'remove-workspace': this.removeWorkspace(); break;
             case 'toggle-fullscreen': this.toggleFullscreenWin(); break;
+            case 'cycle-workspace': this.cycleWorkspace(data.args[0]); break;
             case 'move-within': this.moveWithinWorkspace(data.args[0]); break;
             case 'moveto-workspace': this.moveToWorkspace(data.args[0]); break;
             case 'activate-workspace': this.activateWorkspace(data.args[0]); break;
@@ -175,6 +176,12 @@ export default class XorgManager extends Manager {
     this.sendUpdate();
   }
 
+  removeWorkspace(ws?: number): void {
+    super.removeWorkspace(ws);
+    this.draw();
+    this.sendUpdate();
+  }
+
   activateWorkspace(name: string | number) {
     const ws = Workspace.getByName(`${name}`);
     if (!ws) return;
@@ -183,9 +190,14 @@ export default class XorgManager extends Manager {
     this.sendUpdate();
   }
 
-  cycleWorkspace() {
+  cycleWorkspace(includeEmpty: Boolean = false) {
     if (!this.active?.ws) return;
-    this.activateWorkspace(this.active.ws.next.name);
+    if (!includeEmpty && !this.active.ws.nextOccupied) return;
+    this.activateWorkspace(
+      includeEmpty 
+      ? this.active.ws.next.name
+      : this.active.ws.nextOccupied.name
+    );
   }
 
   toggleFloatWin(win: Window): void {
@@ -343,6 +355,7 @@ export default class XorgManager extends Manager {
     client.ConfigureWindow(wid, { borderWidth: 1 });
     client.ChangeWindowAttributes(wid, { borderPixel: XorgManager.borderColor1, ...masks.window });
     this.draw(Window.getById(wid).workspace);
+    this.sendUpdate();
     this.split = false;
   }
 
@@ -351,6 +364,7 @@ export default class XorgManager extends Manager {
     const ws = win.workspace;
     super.destroyWindow(win);
     this.draw(ws);
+    this.sendUpdate();
   }
 
   async getOverrideRedirect(wid: number): Promise<Boolean> {

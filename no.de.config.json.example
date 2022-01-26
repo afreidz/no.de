@@ -1,84 +1,30 @@
 {
   "wm": {
-    "strut": {
-      "t": 40,
-      "b": 10,
-      "l": 10,
-      "r": 10
-    },
-    "gaps": {
-      "t": 10,
-      "b": 10,
-      "l": 10,
-      "r": 10
-    },
+    "display": 2,
+    "strut": { "t": 40, "b": 10, "l": 10, "r": 10 },
+    "gaps": { "t": 10, "b": 10, "l": 10, "r": 10 },
     "keybinds": [
-      {
-        "key": "super + shift + Return",
-        "cmd": "no.de wm -c exec -a kitty -a split"
-      },
-      {
-        "key": "super + Return",
-        "cmd": "no.de wm -c exec -a kitty"
-      },
-      {
-        "key": "super + {w,q}",
-        "cmd": "no.de wm -c kill"
-      },
-      {
-        "key": "super + shift + f",
-        "cmd": "no.de wm -c toggle-fullscreen"
-      },
-      {
-        "key": "super + shift + s",
-        "cmd": "no.de wm -c flip"
-      },
-      {
-        "key": "super + {1,2,3,4}",
-        "cmd": "no.de wm -c activate-workspace -a {1,2,3,4}"
-      },
-      {
-        "key": "super + shift + {1,2,3,4}",
-        "cmd": "no.de wm -c moveto-workspace -a {1,2,3,4}"
-      },
-      {
-        "key": "super + {b,d,t,f,c,m}",
-        "cmd": "no.de wm -c exec -a {brave,discord,teams,nautilus,codium,prospect-mail}"
-      },
-      {
-        "key": "super + Tab",
-        "cmd": "no.de wm -c cycle-workspace"
-      },
-      {
-        "key": "super + ctrl + {Up,Down,Right,Left}",
-        "cmd": "no.de wm -c move-within -a {n,s,e,w}"
-      },
-      {
-        "key": "super + shift + {Up,Right}",
-        "cmd": "no.de wm -c resize -a {n,e} -a 5"
-      },
-      {
-        "key": "super + shift + {Down,Left}",
-        "cmd": "no.de wm -c resize -a {s,w} -a -5"
-      },
-      {
-        "key": "super + {Up,Right}",
-        "cmd": "no.de wm -c resize -a {n,e} -a 10"
-      },
-      {
-        "key": "super + {Down,Left}",
-        "cmd": "no.de wm -c resize -a {s,w} -a -10"
-      }
+      { "key": "super + shift + Return", "cmd": "no.de wm -c exec -a kitty -a split" },
+      { "key": "super + Return", "cmd": "no.de wm -c exec -a kitty" },
+      { "key": "super + {w,q}", "cmd": "no.de wm -c kill" },
+      { "key": "super + shift + f", "cmd": "no.de wm -c toggle-fullscreen" },
+      { "key": "super + shift + s", "cmd": "no.de wm -c flip" },
+      { "key": "super + {1,2,3,4,5,6,7,8,9,0}", "cmd": "no.de wm -c activate-workspace -a {1,2,3,4,5,6,7,8,9,10}" },
+      { "key": "super + shift + {1,2,3,4,5,6,7,8,9,0}", "cmd": "no.de wm -c moveto-workspace -a {1,2,3,4,5,6,7,8,9,10}" },
+      { "key": "super + {b,d,f,c}", "cmd": "no.de wm -c exec -a {brave,discord,nautilus,nvim}" },
+      { "key": "super + Tab", "cmd": "no.de wm -c cycle-workspace" },
+      { "key": "super + shift + Tab", "cmd": "no.de wm -c cycle-workspace -a true" },
+      { "key": "super + ctrl + {Up,Down,Right,Left}", "cmd": "no.de wm -c move-within -a {n,s,e,w}" },
+      { "key": "super + shift + {Up,Right}", "cmd": "no.de wm -c resize -a {n,e} -a 5" },
+      { "key": "super + shift + {Down,Left}", "cmd": "no.de wm -c resize -a {s,w} -a -5" },
+      { "key": "super + {Up,Right}", "cmd": "no.de wm -c resize -a {n,e} -a 10" },
+      { "key": "super + {Down,Left}", "cmd": "no.de wm -c resize -a {s,w} -a -10" },
+      { "key": "super + ctrl + equal", "cmd": "no.de wm -c add-workspace" },
+      { "key": "super + ctrl + minus", "cmd": "no.de wm -c remove-workspace" }
     ],
     "compositor": true,
-    "ui": {
-      "desktop": true
-    }
+    "ui": { "desktop": true }
   },
-  "ui": {
-    "port": 3333
-  },
-  "ipc": {
-    "port": 3334
-  }
+  "ui": { "port": 3333 },
+  "ipc": { "port": 3334 }
 }
