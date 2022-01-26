@@ -9,8 +9,6 @@
       { "key": "super + {w,q}", "cmd": "no.de wm -c kill" },
       { "key": "super + shift + f", "cmd": "no.de wm -c toggle-fullscreen" },
       { "key": "super + shift + s", "cmd": "no.de wm -c flip" },
-      { "key": "super + {1,2,3,4,5,6,7,8,9,0}", "cmd": "no.de wm -c activate-workspace -a {1,2,3,4,5,6,7,8,9,10}" },
-      { "key": "super + shift + {1,2,3,4,5,6,7,8,9,0}", "cmd": "no.de wm -c moveto-workspace -a {1,2,3,4,5,6,7,8,9,10}" },
       { "key": "super + {b,d,f,c}", "cmd": "no.de wm -c exec -a {brave,discord,nautilus,nvim}" },
       { "key": "super + Tab", "cmd": "no.de wm -c cycle-workspace" },
       { "key": "super + shift + Tab", "cmd": "no.de wm -c cycle-workspace -a true" },
