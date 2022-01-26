@@ -6,7 +6,7 @@ import Container, { ContainerConstructor, Geography, Gaps, Coord } from './conta
 interface WorkspaceConstructor extends ContainerConstructor {
   strut?: Gaps,
   name?: string,
-  screen: number,
+  screen: Geography,
 };
 
 export let count = 1;
@@ -14,13 +14,13 @@ export let count = 1;
 export default class Workspace extends Container {
   constructor(opts: WorkspaceConstructor) {
     super(opts);
-    this.strut = opts.strut;
-    this.screen = this.root.screens[opts.screen];
     this.isWorkspace = true;
+    this.strut = opts.strut;
+    this.screen = opts.screen;
     this.dir = opts.dir || 'ltr';
     this.name = opts.name || `${count}`;
 
-    this.active = true;
+    this.active = false;
 
     count += 1;
   }
@@ -36,20 +36,6 @@ export default class Workspace extends Container {
 
   set geo(g: Geography) {
     super.geo = g;
-  }
-
-  get active(): Boolean {
-    return super.active;
-  }
-
-  set active(v: Boolean) {
-    const all = Workspace.getAllOnScreen(this.screen);
-    super.active = v;
-    if (v === true) {
-      all.forEach(ws => {
-        if (ws !== this) ws.active = false;
-      });
-    }
   }
 
   get next() {
@@ -75,6 +61,10 @@ export default class Workspace extends Container {
 
   get children(): Array<Container> {
     return [...super.children];
+  }
+
+  get isOnlyChild(): Boolean {
+    return Workspace.getAllOnScreen(this.screen).length === 1;
   }
 
   append(c: Section, i?: number) {
@@ -106,7 +96,7 @@ export default class Workspace extends Container {
   }
 
   static getAllOnScreen(s: Geography): Array<Workspace> {
-    return this.getAll().filter(ws => ws.screen === s);
+    return this.getAll().filter(ws => (ws.screen === s));
   }
 
   static getByCoords(c: Coord): Workspace {
@@ -123,9 +113,5 @@ export default class Workspace extends Container {
 
   static getByName(name: string): Workspace {
     return this.getAll().find(w => w.name == name);
-  }
-
-  static getByNameOrId(p: string | number): Workspace {
-    return this.getByName(`${p}`) || this.getById(p);
   }
 }

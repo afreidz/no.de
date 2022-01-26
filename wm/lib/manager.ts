@@ -38,12 +38,14 @@ export default class Manager {
   
   get active() {
     const win: Window = this.activeWin || Window.getByCoords(this.mouse);
+    const screen: Geography = win?.workspace?.screen.i || this.root.getScreenByCoords(this.mouse);
     const ws: Workspace = win?.workspace
       || Workspace.getByCoords(this.mouse)
       || Workspace.getAllOnScreen(this.root.screens[0])[0];
     const sec: Section = win?.parent || ws?.children[ws?.children.length-1];
 
     return {
+      screen,
       win,
       sec,
       ws,
@@ -54,24 +56,18 @@ export default class Manager {
     //noop: use adapters
   }
 
-  addWorkspace(target: number | null = null, name: string | null = null) {
-    const screen = (target >= 0 && target) || this.root.getScreenByCoords(this.mouse)?.i || 0;
-    const ws = new Workspace({ dir: dir1, screen, strut, name });
+  addWorkspace(screen: Geography): Workspace {
+    const ws = new Workspace({ dir: dir1, screen, strut });
     const sc = new Section({ dir: dir2, gaps });
     this.root.append(ws);
     ws.append(sc);
+    return ws;
   }
-  
-  removeWorkspace(ws: number | null = null) {
-    const target = Workspace.getByNameOrId(ws) || this.active.ws;
-    if (!target || target.hasWindows) return;
-    target.next.active = true;
-    target.children.forEach(c => {
-      target.remove(c);
-      c.deref();
-    });
-    target.parent.remove(target);
-    target.deref();
+
+  removeWorkspace(ws: Workspace) {
+    if (!ws || ws.hasWindows || ws.isOnlyChild) return;
+    ws.next.active = true;
+    ws.deref();
   }
 
   run(cmd) {
@@ -141,7 +137,6 @@ export default class Manager {
 
   destroyWindow(win: Window) {
     if (win) {
-      win.parent.remove(win);
       win.deref();
     }
   }

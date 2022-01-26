@@ -1,3 +1,5 @@
+import * as uuid from 'uuid';
+
 export const Cache = new Map<number, Container>();
 
 export type Dir = 'ltr' | 'ttb';
@@ -47,9 +49,9 @@ export default class Container {
   isWin: Boolean;
   #geo: Geography;
   isRoot: Boolean;
+  active: Boolean;
   mapped?: Boolean;
   parent: Container;
-  #active?: Boolean;
   screen?: Geography;
   #floating?: Boolean;
   isWorkspace: Boolean;
@@ -58,9 +60,11 @@ export default class Container {
   screens?: Array<Geography>;
   
   constructor(opts: ContainerConstructor = {}) {
-    this.id = opts?.id || Cache.size + 1;
-    Cache.set(this.id, this);
-    
+    this.id = opts?.id || uuid.v4();
+    if(Cache.has(this.id)) {
+      console.error('ID mismatch', this.id, Cache.get(this.id)) 
+      throw new Error('ID mismatch');
+    }
     this.ratio = 1;
     this.isWin = false;
     this.isRoot = false;
@@ -69,6 +73,7 @@ export default class Container {
     this.dir = opts.dir || 'ltr';
     this.#geo = opts?.geo || defaultGeo;
     this.#children = new Set();
+    Cache.set(this.id, this);
   }
 
   get geo(): Geography {
@@ -118,14 +123,6 @@ export default class Container {
     return gapAdjusted;
   }
 
-  get active(): Boolean {
-    return this.#active;
-  }
-
-  set active(v: Boolean) {
-    this.#active = v;
-  }
-
   get childrenIds(): Array<number> {
     return [...this.#children].map(c => c.id);
   }
@@ -173,6 +170,10 @@ export default class Container {
       || Container.getAll().find(c => c.isRoot);
   }
 
+  get isOnlyChild(): Boolean {
+    return this.parent.children.length === 1;
+  }
+
   serialize() {
     return {
       id: this.id,
@@ -189,7 +190,11 @@ export default class Container {
   }
 
   deref() {
-    this.children.forEach(c => c.deref());
+    this.children.forEach(c => {
+      c.parent.remove(c);
+      c.deref();
+    });
+    this.parent && this.parent.remove(this);
     Cache.delete(this.id);
   }
 

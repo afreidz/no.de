@@ -81,8 +81,6 @@ export default class XorgManager extends Manager {
       this.drag = { x: e.x, y: e.y };
       client.MoveWindow(target.id, x,y);
       const ws = Workspace.getByCoords({ x, y });
-      console.log('WS By coords', ws.id);
-      console.log('Win WS', target.workspace.id);
       if (target.workspace !== ws) console.log('move', target.id, 'to', ws.id);
       if (target.workspace !== ws) this.moveToWorkspace(ws.name);
     });
@@ -122,13 +120,11 @@ export default class XorgManager extends Manager {
             case 'kill': this.kill(); break;
             case 'flip': this.flipDir(); break;
             case 'resize': this.resize(...data.args); break;
-            case 'add-workspace': this.addWorkspace(); break;
             case 'remove-workspace': this.removeWorkspace(); break;
+            case 'add-workspace': this.addWorkspace(null, true); break;
             case 'toggle-fullscreen': this.toggleFullscreenWin(); break;
             case 'cycle-workspace': this.cycleWorkspace(data.args[0]); break;
             case 'move-within': this.moveWithinWorkspace(data.args[0]); break;
-            case 'moveto-workspace': this.moveToWorkspace(data.args[0]); break;
-            case 'activate-workspace': this.activateWorkspace(data.args[0]); break;
             case 'exec': 
               if (data.args[1] === 'split') {
                 this.split = true;
@@ -170,21 +166,27 @@ export default class XorgManager extends Manager {
     this.sendUpdate();
   }
 
-  addWorkspace(target?: number, name?: string): void {
-    super.addWorkspace(target, name);
+  addWorkspace(target: Geography | null = null, activate: Boolean = false): Workspace {
+    const screen = target ? target : this.root.getScreenByCoords(this.mouse);
+    if (!screen) { 
+      console.error('no screen to add ws'); 
+      return; 
+    }
+    const ws = super.addWorkspace(screen);
+    if (activate) this.activateWorkspace(ws);
+    return ws;
+  }
+
+  removeWorkspace(): void {
+    super.removeWorkspace(this.active.ws);
     this.draw();
     this.sendUpdate();
   }
 
-  removeWorkspace(ws?: number): void {
-    super.removeWorkspace(ws);
-    this.draw();
-    this.sendUpdate();
-  }
-
-  activateWorkspace(name: string | number) {
-    const ws = Workspace.getByName(`${name}`);
-    if (!ws) return;
+  activateWorkspace(ws: Workspace) {
+    if (!ws) return console.error(`no ws ${ws}`);
+    const all = Workspace.getAllOnScreen(ws.screen);
+    all.forEach(ws => (ws.active = false));
     ws.active = true;
     this.draw();
     this.sendUpdate();
@@ -195,8 +197,8 @@ export default class XorgManager extends Manager {
     if (!includeEmpty && !this.active.ws.nextOccupied) return;
     this.activateWorkspace(
       includeEmpty 
-      ? this.active.ws.next.name
-      : this.active.ws.nextOccupied.name
+      ? this.active.ws.next
+      : this.active.ws.nextOccupied
     );
   }
 
@@ -222,9 +224,9 @@ export default class XorgManager extends Manager {
     client.ConfigureWindow(target.id, { borderWidth });
   }
 
-  moveToWorkspace(name: string | number, win?: Window) {
+  moveToWorkspace(name: string, win?: Window) {
     const target = win || this.active.win;
-    const ws = Workspace.getByName(`${name}`);
+    const ws = Workspace.getByName(name);
     if (!target || !ws) return;
     const sec = ws.children[ws.children.length-1];
     target.parent.remove(target);
