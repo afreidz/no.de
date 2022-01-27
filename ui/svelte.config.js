@@ -26,7 +26,7 @@ const config = {
     }
   }),
 	kit: {
-    vite: { ssr: false },
+    vite: { ssr: { external: ['@no.de/ipc'] } },
 		adapter: adapter(),
 		target: '#app'
 	}

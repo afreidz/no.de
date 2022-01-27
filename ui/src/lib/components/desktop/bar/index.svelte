@@ -1,6 +1,5 @@
-<section>
   {#each $screens as screen, a}
-    <div class="screen">
+    <div class="screen" style="top: {screen.y}px; left: {screen.x}px; width: {screen.w}px; height: 30px;">
       <Group>
         <Item>
           {#each $ws.filter(ws => (ws.screen == screen.i)) as ws, b}
@@ -18,16 +17,27 @@
       </Group>
     </div>
   {/each}
-</section>
 
 <script>
+  import { onMount } from 'svelte';
   import Item from './item.svelte';
+  import { ipc } from '$lib/socket'; 
   import Group from './group.svelte';
   import { color } from '$lib/tokens.json';
   import { time } from '$lib/stores/clock';
   import { screens, ws } from '$lib/stores/wm';
   import ClockIcon from '$lib/icons/clock.svelte';
   import LayoutIcon from '$lib/icons/layout.svelte';
+
+  onMount(() => {
+    ipc.on('wm', data => {
+      if (data.msg === 'update') {
+        ws.update(() => (data.workspaces));
+        screens.update(() => (data.screens));
+      }
+    });
+    ipc.send('wm', { msg: 'query' });
+  });
 
   // for some reason $ws cannot be accessed within a loop 
   // referencing itself unless this intermediate var is used
@@ -50,26 +60,20 @@
     }
   }
   
-  section {
-    display: flex;
-    align-items: stretch;
-    backdrop-filter: blur(1px);
-    justify-content: space-between;
-    background-color: map.get($theme, 'colors', 'black', '0');
-    padding: map.get($theme, 'spacing', 0);
-  }
-
   .screen {
-    flex: 1;
     display: flex;
+    position: absolute;
     justify-content: space-between;
+    padding: map.get($theme, 'spacing', 0);
+    backdrop-filter: blur(1px) opacity(0.2);
+    background-color: map.get($theme, 'colors', 'black', '0');
     
     &:first-child {
-      margin-right: 1rem;
+      padding-right: 1rem;
     }
   
     &:last-child {
-      margin-left: 1rem;
+      padding-left: 1rem;
     }
   }
 

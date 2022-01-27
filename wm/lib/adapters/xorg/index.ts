@@ -49,7 +49,7 @@ export default class XorgManager extends Manager {
     this.xscreen = xd.screen[0];
     this.ipc = new IPCClient(['wm']);
     this.borderColor1 = tokens.color.black['0'].replace('#','0x');
-    this.borderColor2 = tokens.color.highlights.blue.replace('#','0x');
+    this.borderColor2 = tokens.color.gray['0'].replace('#','0x');
   }
 
   constructor(screens: Array<Geography>, geo: Geography) {

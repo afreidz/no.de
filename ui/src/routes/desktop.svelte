@@ -27,9 +27,4 @@
     position: absolute;
   }
 
-  main {
-    height: 100%;
-    display: grid;
-    grid-template-rows: 3.5rem auto;
-  }
 </style>
