@@ -10,8 +10,8 @@
       { "key": "super + shift + f", "cmd": "no.de wm -c toggle-fullscreen" },
       { "key": "super + shift + s", "cmd": "no.de wm -c flip" },
       { "key": "super + {b,d,f,c}", "cmd": "no.de wm -c exec -a {brave,discord,nautilus,nvim}" },
-      { "key": "super + Tab", "cmd": "no.de wm -c cycle-workspace" },
-      { "key": "super + shift + Tab", "cmd": "no.de wm -c cycle-workspace -a true" },
+      { "key": "super + Tab", "cmd": "no.de wm -c cycle-workspace -a true" },
+      { "key": "ctrl + Tab", "cmd": "no.de wm -c cycle-workspace" },
       { "key": "super + ctrl + {Up,Down,Right,Left}", "cmd": "no.de wm -c move-within -a {n,s,e,w}" },
       { "key": "super + shift + {Up,Right}", "cmd": "no.de wm -c resize -a {n,e} -a 5" },
       { "key": "super + shift + {Down,Left}", "cmd": "no.de wm -c resize -a {s,w} -a -5" },
@@ -20,6 +20,7 @@
       { "key": "super + ctrl + equal", "cmd": "no.de wm -c add-workspace" },
       { "key": "super + ctrl + minus", "cmd": "no.de wm -c remove-workspace" }
     ],
+    "floatclasses": ["nautilus"],
     "compositor": true,
     "ui": { "desktop": true }
   },

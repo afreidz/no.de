@@ -120,7 +120,7 @@ export default class Manager {
     target.update();
   }
 
-  createWindow(wid: number = null, split?: Boolean) {
+  async createWindow(wid: number = null, split?: Boolean): Promise<Window> {
     const ws = this.active.ws;
 
     let sc: Section;
@@ -133,6 +133,7 @@ export default class Manager {
 
     const win = new Window({ id: wid });
     sc.append(win);
+    return win;
   }
 
   destroyWindow(win: Window) {

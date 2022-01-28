@@ -6,6 +6,7 @@ import Window from '../../window.js';
 import Section from '../../section.js';
 import tokens from '../../tokens.json'; 
 import Workspace from '../../workspace.js';
+import config from '../../../../no.de.config.json';
 import Manager, { gaps, dir2 } from '../../manager.js';
 import Container, { Geography } from '../../container.js';
 
@@ -209,6 +210,7 @@ export default class XorgManager extends Manager {
     const client = XorgManager.client;
     super.toggleFloatWin(target);
     this.draw();
+    client.RaiseWindow(target.id);
   }
 
   toggleFullscreenWin(win?: Window) {
@@ -350,15 +352,28 @@ export default class XorgManager extends Manager {
     client.LowerWindow(wid);
   }
   
-  createWindow(wid: number) {
-    super.createWindow(wid, this.split);
-
+  async createWindow(wid: number): Promise<Window> {
+    const win = await super.createWindow(wid, this.split);
     const client = XorgManager.client;
+
     client.ConfigureWindow(wid, { borderWidth: 1 });
     client.ChangeWindowAttributes(wid, { borderPixel: XorgManager.borderColor1, ...masks.window });
+
+    const classname = await this.getWinClass(wid);
+    const isFloater = config.wm?.floatclasses?.some(c => {
+      return classname
+        .toLowerCase()
+        .includes(c.toLowerCase())
+    });
+    
+    if(isFloater) win.floating = true;
+    
     this.draw(Window.getById(wid).workspace);
+    client.RaiseWindow(wid);
     this.sendUpdate();
     this.split = false;
+    
+    return win;
   }
 
   destroyWindow(win: Window){
@@ -385,20 +400,11 @@ export default class XorgManager extends Manager {
   }
 
   getWinName(wid: number): Promise<string| null> {
-    const client = XorgManager.client;
-    const { WM_NAME, STRING} = client.atoms;
+    return XorgManager.getXProp('WM_NAME', 'STRING', wid);
+  }
 
-    return new Promise(r => {
-      client.GetProperty(0, wid, WM_NAME, STRING, 0, 10000000, (err, prop) => {
-        if (err) {
-          console.error(err);
-          r(null);
-        } else {
-          const val = prop.data.toString();
-          r(val);
-        } 
-      });
-    });
+  getWinClass(wid: number): Promise<string | null> {
+    return XorgManager.getXProp('WM_CLASS', 'STRING', wid);
   }
 
   draw(node?: Container) {
@@ -417,6 +423,29 @@ export default class XorgManager extends Manager {
           win.mapped = true;
         }
       }
+    });
+  }
+
+  static getXProp(prop: string, type: string, wid: number): Promise<any> {
+    const client = XorgManager.client;
+    const propAtom = client?.atoms[prop];
+    const typeAtom = client?.atoms[type];
+
+    if(!client || !propAtom || !typeAtom) {
+      console.error('getXprop', 'client or prop or type not found', prop, type, client);
+      return Promise.resolve(null);
+    }
+    
+    return new Promise(r => {
+      client.GetProperty(0, wid, propAtom, typeAtom, 0, 10000000, (err, prop) => {
+        if (err) {
+          console.error(err);
+          r(null);
+        } else {
+          const val = prop.data;
+          r(type === 'STRING' ? val.toString() : val);
+        } 
+      });
     });
   }
 }
