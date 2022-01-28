@@ -108,6 +108,7 @@ out here:
 * run `npm link` from the repo dir to make `no.de` cmd available
 * run `no.de init` to start it all up
 
+---
 
 ### Window Manager In-depth
 
@@ -162,6 +163,8 @@ setting the inner-gap and being a referential element to whichever **adapter** i
 of no.de's xorg adapter, the id of the window container is the xid of the xwindow that is being mapped.  A window container must be a child 
 of a section container, and has no children of its own. Once a window is present, its geometry (which is the key function of the base 
 container class these concepts inherit from) can be fed to the X11 client which will handle resizing/moving/mapping the window on screen.
+The window container instance itself does not have an insight into the application that is being rendered, but is purely conceptual and 
+used to feed geometry to the X11 client. 
 
 * **Notes**
     * Bare minimum, the manager needs a root, a workspace, a section in order to create an instance of a window to get geometry for rendering
