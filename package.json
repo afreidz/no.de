@@ -2,7 +2,7 @@
   "name": "no.de",
   "version": "0.0.1-alpha-1",
   "bin": {
-    "no.de": "./cli/index.js"
+    "no.de": "npx zx ./cli/index.js"
   },
   "scripts": {
     "generate-tokens": "style-dictionary build -c ./sdconfig.json"

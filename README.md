@@ -47,13 +47,12 @@ the window manager will lay them out in a tile algorithm.  It also handles "work
 further control of when/where windows appear. It has the following features:
 
   * [x] workspace add
-  * [ ] workspace delete
+  * [x] workspace delete
   * [x] window launching
   * [x] window kill
   * [x] floating windows
   * [x] fullscreen windows
-  * [x] switch workspace
-  * [x] move to workspace
+  * [ ] move to workspace
   * [x] cycle workspace
   * [x] flip layout
   * [x] move window within workspace
@@ -61,7 +60,7 @@ further control of when/where windows appear. It has the following features:
 
 
 ### <a name="prereq"></a>Prerequisites
-Okay so here is where things stat to get wonky.  Right now this is in very early development so there are a
+Okay so here is where things start to get wonky.  Right now this is in very early development so there are a
 lot of assumptions and pre-reqs.  Hopefully many of these will be removed as I find better ways to handle
 things, but for now your system has to be setup JUST so in order for this to work.  I will try to lay it all
 out here:
@@ -69,9 +68,6 @@ out here:
   totally YMMV.
   * **nodejs/npm** This may seem obvious, but I'm sure it will cause some raised eyebrows.  Importantly, you
   should be on `node@v14.x` and `npm@v7.x`.  I recommend [volta](https://volta.sh) to manage node/npm versions.
-  * **google/zx** this is an [npm package](https://github.com/google/zx) from the folks at Google that helps 
-  with cli writing.  It works best when installed globally via `npm i -g zx`.  Its a local dependency of the cli 
-  tool already, so there is an opportunity to improve this out of being a "pre-requisite" in the future.
   * **linux packages** the following Arch packages are required:
     * xorg-server
     * xorg-apps
