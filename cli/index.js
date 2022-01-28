@@ -1,4 +1,5 @@
-#!/usr/bin/env zx
+#!/usr/bin/env node
+require('zx/globals');
 const IPCClient = require('@no.de/ipc');
 const configure = require('../configure.js');
 const config = require('../no.de.config.json');
@@ -7,7 +8,7 @@ process.env.FORCE_COLOR=3
 process.env.XDG_CURRENT_DESKTOP="no.de"
 
 const ns = 'no.de';
-const cmd = argv._[1] || null;
+const cmd = argv._[0] || null;
 const base = path.join(__dirname, '../');
 cd(base);
 
