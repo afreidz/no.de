@@ -8,6 +8,7 @@ It is based on X11 (no wayland, sorry).  It will/may include the following DE el
 * [x] Desktop
 * [ ] Application launching
 * [ ] Screen locking
+* [ ] Notifications
 
 _Why?_ I don't really have a great answer for that.  Maybe because I know javascript and wanted to have control
 of the "graphical" parts of my OS.
@@ -106,3 +107,63 @@ out here:
 * configure it by creating `no.de.config.json` in the root [example](https://github.com/afreidz/no.de/blob/main/no.de.config.json.example)
 * run `npm link` from the repo dir to make `no.de` cmd available
 * run `no.de init` to start it all up
+
+
+### Window Manager In-depth
+
+The biggest portion of this Dekstop Environment is the window manager.  It can be considered a tiling window manager
+in that when an app/window requests to be opened, the manager lays it out using a (stupid simple) algorithm 
+that does not overlap with other windows.  Other windows are resized/reoriented to make room on the screen for the new
+window. There are plenty of other tiling window manager (many with far more sophisticated algorithms) but this one I
+developed to suite my personal taste/needs.  In addition to tiling, windows can be opened/converted to a more traditional
+floating window (and also a "fullscreen" window) that takes them out of the tiling flow.  Below are further details of the
+main concepts behind the window manager:
+
+* **The manager class** is instantiated
+with pixel dimensions for the entire screen real-estate to be managed. It also takes an array of "screens" that divide the 
+entire real-estate into areas where "workspaces" can exist. You can think of them as trandition screens (and their position
+/dimensions), but by itself, the manager is agnostic of what is used to actually render anything to screen.  
+An **adapter** is used to supplement the manager class with "rendering" capabilities. In the case of no.de's window manager, 
+X11 (via node-x11) protocols are used to render entities onto the xorg-server screen. For instantiating the manager class 
+with the xorg adapter, an abstraction of xrandr is used to calculate the pixel real-estate to be managed (including multiple 
+heads) and the screens for where workspaces exist.
+
+* **The root container** is a type of container that simply stores the cumulative pixel dimensions, and screens that were used
+when the manager was created.  The manager functions _could_ be added to this root container, but I felt it was better to
+abstract the management to a separate concept and keep all container-like objects as simple as possible.  The root can be
+considered the terminal node from which all other nodes descend from.
+
+* **The workspace container** is a familiar concept to many window managers and desktop environments.  It is essentially a virtual
+desktop that can be used to contain windows in an isolated geometry (in this case the position and dimensions of an attached screen).
+Workspaces are instantiated with, and can have a many-to-one relationship with, a screen.  However, only 1 workspace may be "active"
+on a screen at a time. They also can be instantiated with a
+concept known as a "strut" which is a means to offset all windows by a certain amount of pixels from the edges of the workspace. A 
+use-case for struts is if a bar/dock is occupying certain real-estate that windows should not render on top of. Workspaces also have
+a direction property of either "ltr" or "ttb".  These values tell the layout algorithm to render workspace children either top-to-bottom
+("ttb") or left-to-right ("ltr"). All workspaces are children of the root container and can have 1 type of child themselves: 
+a **section container**
+
+* **The section container** is fairly irrelevant in terms of rendering anything. But the concept exists to make the layout algorithm 
+more easy to understand. If a workspace has a direction of "ltr", then windows will be added to sections and rendered left-to-right.
+Conversely, if a workspace dir is set to "ttb", then section containers layout their children top-to-bottom. A section can only be 
+a child of a workspace, and can only take window containers as it children. Sections are the concept that drives the layout algorithm 
+and are responsible for disecting the layout real-estate on the oposite axis of the workspace direction. This is accomplished by 
+adding an additional section to a workspace.  When a subsequent section is added to a workspace, it is laid out opposite the workspace 
+direction setting.  This is called a "split."  When a window requests to open in a split, a new section is created, added to the current
+workspace, and the window is rendered into it.  This breaks the workspace direction flow. Any additional windows that ask to render in 
+the new section will respect the dir setting of the workspace like any other section.  This concept may seem slightly terse in word-form
+but makes the layout algorighm fairly simple.  It may have far less options than many other tiling algorithms other window managers use,
+but I think you will find there are a fair amount of layouts that can be achieved with these concepts.  The only other function of a 
+section container is to add the "outer gap" for creating space between windows similar to i3wm-gaps.  The "inner gap" is controled by 
+the window container itself
+
+* **The window container** is the final piece to the layout puzzle.  This container is simple and doesn't have much implementation beyond
+setting the inner-gap and being a referential element to whichever **adapter** is being used to render content to screen.  In the case 
+of no.de's xorg adapter, the id of the window container is the xid of the xwindow that is being mapped.  A window container must be a child 
+of a section container, and has no children of its own. Once a window is present, its geometry (which is the key function of the base 
+container class these concepts inherit from) can be fed to the X11 client which will handle resizing/moving/mapping the window on screen.
+
+* **Notes**
+    * Bare minimum, the manager needs a root, a workspace, a section in order to create an instance of a window to get geometry for rendering
+    * To add additional layouts, a workspace can be "flipped" to render in the opposite direction (ttb/ltr)
+
