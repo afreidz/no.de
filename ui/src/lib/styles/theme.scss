@@ -5,6 +5,7 @@
 $rem: 10px;
 $theme: (
   colors: map.get($tokens, 'color'),
+  radius: 6px,
   spacing: (
     0: math.div($rem, 2),
     1: $rem,

@@ -7,10 +7,7 @@ const uiport = config.ui?.port || 7000;
 const display = config.wm?.display || 1;
 const ipcport = config.ipc?.port || 7001;
 
-const uiurls = {
-  desktop: `http://localhost:${uiport}/desktop`,
-};
-
+const uiurls = config.ui?.urls;
 const apps = [{
   name: 'ipc',
   namespace: ns,
@@ -31,7 +28,7 @@ const apps = [{
   script: `/usr/bin/sxhkd -c ${join(base, 'sxhkdrc')}`
 }];
 
-if (config.wm?.ui?.desktop) {
+if (Object.values(config.wm?.ui || {}).some(Boolean)) {
   apps.push({
     name: 'ui',
     namespace: ns,
@@ -42,12 +39,28 @@ if (config.wm?.ui?.desktop) {
 }
 
 if (config.wm?.ui?.desktop) {
+  const url = uiurls.desktop.startsWith('/')
+    ? `http://localhost:${uiport}${uiurls.desktop}`
+    : uiurls.desktop;
+
   apps.push({
     namespace: ns,
     name: 'desktop',
     restart_delay: 1000,
     env: { DISPLAY: `:${display}`},
-    script: `${join(base, 'ui/bin', 'webview.cjs')} --title ${ns}-desktop --type "DESKTOP" --url ${uiurls.desktop}`
+    script: `${join(base, 'ui/bin', 'webview.cjs')} --title ${ns}-desktop --url ${url}`
+  })
+}
+
+if (config.wm?.ui?.modal) {
+  const url = `http://localhost:${uiport}`
+
+  apps.push({
+    namespace: ns,
+    name: 'modal',
+    restart_delay: 1000,
+    env: { DISPLAY: `:${display}`},
+    script: `${join(base, 'ui/bin', 'webview.cjs')} --title ${ns}-modal --url ${url}`
   })
 }
 

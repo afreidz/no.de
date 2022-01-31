@@ -1,4 +1,5 @@
 import * as uuid from 'uuid';
+import Window from './window';
 
 export const Cache = new Map<number, Container>();
 
@@ -181,6 +182,7 @@ export default class Container {
       name: this.name,
       active: this.active,
       screen: this.screen?.i,
+      children: this.descendents.filter(d => d instanceof Window).map(w => w.geo),
       hasWindows: this.hasWindows,
     }
   }

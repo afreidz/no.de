@@ -18,6 +18,7 @@ switch (cmd) {
   case 'kill': kill(); break; 
   case 'logs': logs(); break; 
   case 'wm': wmcmd(); break; 
+  case 'ui': uicmd(); break;
   case 'ls': ls(); break; 
 }
 
@@ -63,5 +64,15 @@ async function wmcmd() {
   const args = Array.isArray(argv.a) ? argv.a : [argv.a];
 
   await client.send('wm', { msg: 'command', command, args });
+  client.close();
+}
+
+async function uicmd() {
+  const client = new IPCClient(['ui']);
+  const command = argv.c;
+  const window = argv.w;
+  const args = Array.isArray(argv.a) ? argv.a : [argv.a];
+
+  await client.send('ui', { command, window, args });
   client.close();
 }

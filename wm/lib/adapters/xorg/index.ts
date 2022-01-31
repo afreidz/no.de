@@ -41,14 +41,18 @@ export default class XorgManager extends Manager {
   static xscreen: any;
   static borderColor1: any;
   static borderColor2: any;
-  desktop: number
+
+  modal: number;
+  desktop: number;
+  heldWin: number;
+  modalMapped: Boolean;
   
   static async setup() {
     const xd = await xInit();
     this.display = xd;
     this.client = xd.client;
     this.xscreen = xd.screen[0];
-    this.ipc = new IPCClient(['wm']);
+    this.ipc = new IPCClient(['wm', 'ui']);
     this.borderColor1 = tokens.color.black['0'].replace('#','0x');
     this.borderColor2 = tokens.color.gray['0'].replace('#','0x');
   }
@@ -120,12 +124,19 @@ export default class XorgManager extends Manager {
           switch (command) {
             case 'kill': this.kill(); break;
             case 'flip': this.flipDir(); break;
+            case 'close-modal': this.closeModal(); break;
             case 'resize': this.resize(...data.args); break;
             case 'remove-workspace': this.removeWorkspace(); break;
+            case 'open-modal': this.openModal(data.args[0]); break;
             case 'add-workspace': this.addWorkspace(null, true); break;
             case 'toggle-fullscreen': this.toggleFullscreenWin(); break;
             case 'cycle-workspace': this.cycleWorkspace(data.args[0]); break;
             case 'move-within': this.moveWithinWorkspace(data.args[0]); break;
+            case 'move-to-workspace': this.moveToWorkspace(data.args[0], Window.getById(this.heldWin)); break;
+            case 'activate-workspace':
+              const ws = Workspace.getByName(data.args[0]);
+              this.activateWorkspace(ws);
+            break;
             case 'exec': 
               if (data.args[1] === 'split') {
                 this.split = true;
@@ -144,7 +155,7 @@ export default class XorgManager extends Manager {
   sendUpdate(){
     const ipc = XorgManager.ipc;
     const workspaces = Workspace.getAll().map(ws => ws.serialize());
-    ipc.send('wm', { msg: 'update', workspaces, screens: this.root.screens });
+    ipc.send('wm', { msg: 'update', workspaces, screens: this.root.screens, root: this.root.geo });
   }
 
   run(cmd: string) {
@@ -332,6 +343,8 @@ export default class XorgManager extends Manager {
 
     if (name === 'no.de-desktop') {
       this.createDesktop(id);
+    } else if (name === 'no.de-modal') {
+      this.createModal(id);
     } else if (or) {
       XorgManager.client.MapWindow(id);
     } else {
@@ -350,6 +363,49 @@ export default class XorgManager extends Manager {
     client.ConfigureWindow(wid, { x, y, width, height});
     client.MapWindow(wid);
     client.LowerWindow(wid);
+  }
+
+  createModal(wid: number) {
+    if (this.modal) return;
+    const ws = this.active.ws;
+    const client = XorgManager.client;
+
+    this.modal = wid;
+    this.modalMapped = false;
+    const { x, y, w: width, h: height } = ws.screen;
+    client.ConfigureWindow(wid, { x, y, width, height });
+  }
+
+  openModal(type: string) {
+    if (!this.modal) return;
+    
+    // Hold win assuming mouse activity on modal
+    this.heldWin = this.active.win?.id;
+
+    if (type === 'movetows' && !this.heldWin) return;
+
+    const ws = this.active.ws;
+    const ipc = XorgManager.ipc;
+    const client = XorgManager.client;
+    const { x, y, w: width, h: height } = ws.screen;
+
+    if (this.modalMapped) return;
+    const urls = config.ui?.urls;
+    ipc.send('ui', { command: 'update-url', window: 'no.de-modal', url: urls[type] });
+
+    client.ConfigureWindow(this.modal, { x, y, width, height });
+    client.MapWindow(this.modal);
+    client.RaiseWindow(this.modal);
+    this.modalMapped = true;
+  }
+
+  closeModal() {
+    if (!this.modal || !this.modalMapped) return;
+
+    const client = XorgManager.client;
+    client.UnmapWindow(this.modal);
+    this.modalMapped = false;
+    this.heldWin = null;
   }
   
   async createWindow(wid: number): Promise<Window> {

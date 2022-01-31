@@ -52,7 +52,7 @@ further control of when/where windows appear. It has the following features:
   * [x] window kill
   * [x] floating windows
   * [x] fullscreen windows
-  * [ ] move to workspace
+  * [x] move to workspace
   * [x] cycle workspace
   * [x] flip layout
   * [x] move window within workspace

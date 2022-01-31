@@ -1,14 +1,17 @@
 import iohook from 'iohook';
+import IPCClient from '@no.de/ipc';
 import { EventEmitter } from 'events';
 
 export default function() {
   const ee = new EventEmitter();
+  const ipc = new IPCClient(['wm']);
   let meta: Boolean = false;
   let ctrl: Boolean = false;
 
   iohook.on('keyup', e => {
     if (e.metaKey) meta = false;
     if (e.ctrlKey) ctrl = false;
+    if (e.keycode == 1) ipc.send('wm', { msg: 'command', command: 'close-modal' });
   });
       
   iohook.on('keydown', e => {
