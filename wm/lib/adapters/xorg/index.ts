@@ -53,8 +53,8 @@ export default class XorgManager extends Manager {
     this.client = xd.client;
     this.xscreen = xd.screen[0];
     this.ipc = new IPCClient(['wm', 'ui']);
-    this.borderColor1 = tokens.color.black['0'].replace('#','0x');
     this.borderColor2 = tokens.color.gray['0'].replace('#','0x');
+    this.borderColor1 = tokens.color.black['0'].replace('#','0x');
   }
 
   constructor(screens: Array<Geography>, geo: Geography) {
@@ -202,6 +202,7 @@ export default class XorgManager extends Manager {
     ws.active = true;
     this.draw();
     this.sendUpdate();
+    this.closeModal();
   }
 
   cycleWorkspace(includeEmpty: Boolean = false) {
@@ -245,6 +246,7 @@ export default class XorgManager extends Manager {
     target.parent.remove(target);
     sec.append(target);
     this.draw();
+    this.closeModal();
   }
 
   moveWithinWorkspace(dir: Dir) {

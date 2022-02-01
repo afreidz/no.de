@@ -4,6 +4,7 @@
     "strut": { "t": 40, "b": 10, "l": 10, "r": 10 },
     "gaps": { "t": 10, "b": 10, "l": 10, "r": 10 },
     "keybinds": [
+      { "key": "super + space", "cmd": "no.de wm -c open-modal -a launch" },
       { "key": "super + shift + Return", "cmd": "no.de wm -c exec -a kitty -a split" },
       { "key": "super + Return", "cmd": "no.de wm -c exec -a kitty" },
       { "key": "super + {w,q}", "cmd": "no.de wm -c kill" },
@@ -12,6 +13,8 @@
       { "key": "super + {b,d,f,c}", "cmd": "no.de wm -c exec -a {brave,discord,nautilus,nvim}" },
       { "key": "super + Tab", "cmd": "no.de wm -c cycle-workspace -a true" },
       { "key": "ctrl + Tab", "cmd": "no.de wm -c cycle-workspace" },
+      { "key": "super + grave", "cmd": "no.de wm -c open-modal -a overview" },
+      { "key": "super + ctrl + m", "cmd": "no.de wm -c open-modal -a movetows" },
       { "key": "super + ctrl + {Up,Down,Right,Left}", "cmd": "no.de wm -c move-within -a {n,s,e,w}" },
       { "key": "super + shift + {Up,Right}", "cmd": "no.de wm -c resize -a {n,e} -a 5" },
       { "key": "super + shift + {Down,Left}", "cmd": "no.de wm -c resize -a {s,w} -a -5" },
@@ -22,8 +25,16 @@
     ],
     "floatclasses": ["nautilus"],
     "compositor": true,
-    "ui": { "desktop": true }
+    "ui": { "desktop": true, "modal": true }
   },
-  "ui": { "port": 3333 },
+  "ui": { 
+    "port": 3333,
+    "urls": {
+      "desktop": "/desktop",
+      "overview": "/overview",
+      "movetows": "/movetows",
+      "launch": "/launch"
+    }
+  },
   "ipc": { "port": 3334 }
 }

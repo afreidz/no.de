@@ -29,6 +29,6 @@
   @use "$lib/styles" as *;
 
   .a {
-    stroke: map.get($theme, 'tokens', 'text-color');
+    stroke: map.get($theme, 'colors', 'highlights', 'rosewater');
   }
 </style>

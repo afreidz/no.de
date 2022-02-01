@@ -10,7 +10,11 @@
 <Overview title="Move window to workspace" {callback} />
 
 <style lang="scss">
+  @use "sass:map";
+  @use "$lib/styles" as *;
+  @import "$lib/styles/base/index.css";
+
   :global(html) {
-    background-color: rgba(0,0,0,0.5) !important;
+    background-color: map.get($theme, 'modal') !important;
   } 
 </style>

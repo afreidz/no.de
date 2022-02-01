@@ -15,9 +15,9 @@ export async function post(request) {
 
 export async function get(request) {
   const data = await cmd(`find /usr/share/applications ~/.local/share/applications /var/lib/snapd/desktop -name '*.desktop'`);
-  const mode = request.query.get('mode') || 'default';
+  const mode = request.url.searchParams.get('mode') || 'default';
   const paths = data.split('\n').filter(Boolean);
-  const query = request.query.get('query');
+  const query = request.url.searchParams.get('query');
   let results = [];
   const apps = [];
 
