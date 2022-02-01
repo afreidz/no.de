@@ -33,7 +33,7 @@ It is based on X11 (no wayland, sorry).  It will/may include the following DE el
 * [ ] Login/Session
 * [x] Tiling window management
 * [x] Desktop
-* [ ] Application launching
+* [x] Application launching
 * [ ] Screen locking
 * [ ] Notifications
 
