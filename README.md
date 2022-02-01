@@ -1,6 +1,33 @@
-## no.de (A nodejs X11 Desktop Environment)
+<a name="top"></a>
+<div align="center">
 
-### Background
+ <img src="./logo.png" width=300/>
+
+ # no.de (A nodejs X11 Desktop Environment)
+ 
+ <a href="https://archlinux.org">![Platforms](https://img.shields.io/badge/platforms-linux%20(arch)-blue?style=for-the-badge)</a>
+ <a href="https://nodejs.org">![Nodejs](https://img.shields.io/badge/nodejs-%40v14-brightgreen?style=for-the-badge)</a>
+ ![Status](https://img.shields.io/badge/status-WIP-informational?style=for-the-badge)
+
+ [Background](#background)
+ •
+ [Concepts/Packages](#concepts)
+ •
+ [Prerequisites](#prereq)
+ •
+ [Installation](#install)
+ •
+ [WM](#winman)
+ 
+</div>
+
+
+---
+
+<h3 align="center"><a name="background"></a>📜 Background  <a href="#top">👆</a></h3>
+
+---
+ 
 _What?_ This (eventually) will/may become a full desktop environment for a Linux machine written in javascript.
 It is based on X11 (no wayland, sorry).  It will/may include the following DE elements:
 * [ ] Login/Session
@@ -13,7 +40,11 @@ It is based on X11 (no wayland, sorry).  It will/may include the following DE el
 _Why?_ I don't really have a great answer for that.  Maybe because I know javascript and wanted to have control
 of the "graphical" parts of my OS.
 
-### Concepts/Packages
+---
+
+<h3 align="center"><a name="concepts"></a>📦 Concepts/Packages  <a href="#top">👆</a></h3>
+
+---
 
 * #### ipc
 _Inter-process communication_ is handled via [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket).
@@ -58,8 +89,12 @@ further control of when/where windows appear. It has the following features:
   * [x] move window within workspace
   * [x] resize window ratios
 
+---
 
-### <a name="prereq"></a>Prerequisites
+<h3 align="center"><a name="prereq"></a>✅ Prerequisites  <a href="#top">👆</a></h3>
+
+---
+
 Okay so here is where things start to get wonky.  Right now this is in very early development so there are a
 lot of assumptions and pre-reqs.  Hopefully many of these will be removed as I find better ways to handle
 things, but for now your system has to be setup JUST so in order for this to work.  I will try to lay it all
@@ -96,7 +131,12 @@ out here:
   gobject-introspection 
 ```
 
-### Installation
+---
+
+<h3 align="center"><a name="install"></a>🔽 Installation  <a href="#top">👆</a></h3>
+
+---
+
 * finish [prerequisites](#prereq)
 * clone this repo
 * run `npm install` from the repo dir to install npm deps
@@ -106,7 +146,9 @@ out here:
 
 ---
 
-### Window Manager In-depth
+<h3 align="center"><a name="winman"></a>🪟 Window Manager In-Depth  <a href="#top">👆</a></h3>
+
+---
 
 The biggest portion of this Dekstop Environment is the window manager.  It can be considered a tiling window manager
 in that when an app/window requests to be opened, the manager lays it out using a (stupid simple) algorithm 
@@ -165,4 +207,3 @@ used to feed geometry to the X11 client.
 * **Notes**
     * Bare minimum, the manager needs a root, a workspace, a section in order to create an instance of a window to get geometry for rendering
     * To add additional layouts, a workspace can be "flipped" to render in the opposite direction (ttb/ltr)
-
